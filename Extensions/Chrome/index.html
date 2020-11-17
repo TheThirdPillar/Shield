@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Shield - Install</title>
+        <link href="https://fonts.googleapis.com/css2?family=Turret+Road:wght@200;300;400;500;700;800&display=swap" rel="stylesheet">
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+        <link href="assets/css/style2.css" rel="stylesheet">
+    </head>
+    <body>
+        <div class="extension-container">
+            <div class="row">
+                <div class="col-3">
+                    <img src="assets/images/shieldOnline.png" class="img-fluid">
+                </div>
+                <div class="col-9 justify-content-center">
+                    <h1>
+                        SHIELD
+                    </h1>
+                    <p class="text-muted text-bold"><small>"Privacy should not be a feauture, but the foundation."</small></p>
+                </div>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-10">
+                    <div class="qr_icon" id="qrcode"></div>
+                </div>
+            </div>
+            <div class="row justify-content-center mt-2">
+                <div class="col-10 text-center">
+                    <h5>Total Applications <span class="badge badge-primary" id="totalApplications"></span></h5>
+                </div>
+                <div class="col-10 text-center">
+                    <h5>Active Sessions <span class="badge badge-success" id="activeSessions"></span></h5>
+                </div>
+            </div>
+            <div class="row mt-4 justify-content-center">
+                <button type="button" class="btn btn-dark mr-2" id="downloadDataButton">
+                    Download Shield Data
+                </button>
+                <button type="button" class="btn btn-danger ml-2">
+                    Delete Account
+                </button>
+            </div>
+        </div>        
+        <script src="assets/javascript/jquery.min.js"></script>
+        <script src="assets/javascript/bootstrap.min.js"></script>
+        <script src="assets/javascript/qrcode.min.js"></script>
+        <script src="assets/javascript/index.js"></script>
+    </body>
+</html>

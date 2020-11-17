@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Shield - Install</title>
+        <link href="https://fonts.googleapis.com/css2?family=Turret+Road:wght@200;300;400;500;700;800&display=swap" rel="stylesheet">
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+        <link href="assets/css/style.css" rel="stylesheet">
+    </head>
+    <body>
+        <div class="container">
+            <div class="row justify-content-center">
+                <h1>Register Shield with SkillsChain Network</h1>
+            </div>
+            <div class="row mt-4 p-4">
+                <div class="col-6 border-right">
+                    <div id="left-section-1" class="left-section-1">
+                        <form id="shieldRegistration">
+                            <div class="form-group">
+                                <label for="publicKey">Public Key</label>
+                                <input type="text" class="form-control" id="publicKey" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label for="privateKey">Private Key</label>
+                                <input type="text" class="form-control" id="privateKey" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" class="form-control" id="email" placeholder="Please enter your email address" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" title="Please enter your email address" required> 
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Password</label>
+                                <input type="password" class="form-control" id="password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" placeholder="Choose a password (min 8 characters)" aria-describedby="passwordHelpBlock" required>
+                                <small id="passwordHelpBlock" class="form-text text-muted">
+                                    Your password must be 8 characters and must contain a lowercase and a uppercase letter and a number.
+                                </small>
+                            </div>
+                            <div class="form-group">
+                                <label for="confirmPassword">Confirm password</label>
+                                <input type="password" class="form-control" id="confirmPassword" placeholder="Please confirm the password" required>
+                            </div>
+                            <div class="row text-center">
+                                <div class="col-12">
+                                    <button class="btn btn-primary" type="submit">
+                                        Register
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="row text-center">
+                                <h1 class="col-12 mt-4">OR</h1>
+                                <div class="col-12 mt-4">
+                                    <button class="btn btn-info" disabled>
+                                        Upload existing profile
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="left-section-2 mt-4" id="left-section-2">
+                        <div class="trigger mt-2 p-4"></div>
+                        <svg version="1.1" id="tick" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                            viewBox="0 0 37 37" style="enable-background:new 0 0 37 37;" xml:space="preserve">
+                            <path class="circ path" style="fill:none;stroke:#4BB543;stroke-width:3;stroke-linejoin:round;stroke-miterlimit:10;" d="
+                            M30.5,6.5L30.5,6.5c6.6,6.6,6.6,17.4,0,24l0,0c-6.6,6.6-17.4,6.6-24,0l0,0c-6.6-6.6-6.6-17.4,0-24l0,0C13.1-0.2,23.9-0.2,30.5,6.5z"
+                            />
+                            <polyline class="tick path" style="fill:none;stroke:#4BB543;stroke-width:3;stroke-linejoin:round;stroke-miterlimit:10;" points="
+                            11.6,20 15.9,24.2 26.4,13.8 "/>
+                        </svg>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card bg-light border-white p-2 m-2 mt-4" id="setupMessage">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 mt-2">
+                    <div class="image-block">
+                        <img src="assets/images/undraw_sign_in_e6hj.svg" class="img-fluid align-middle" alt="Shield Register">
+                    </div>
+                    <div class="row mt-2 p-2 justify-content-center">
+                        <div class="col-10">
+                            <div class="card bg-light p-2 m-2 border-light"> 
+                                <div class="card-header">
+                                    Important!
+                                </div>
+                                <div class="card-body">
+                                    <div class="card-text">
+                                        Please note that we do not store the <strong>Private Key</strong> or the <strong>Password</strong> used here to create your account.
+                                        Once the registration is successfull, your crypto information will be downloaded as a text file. 
+                                        <br />
+                                        <strong>Keep both ( the crypto file and the password ) of these informations safe and secure. There is no way to recover them.</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-2 p-2">
+                <div class="col-6">
+                    <div class="alert alert-dismissible fade show" id="alert" role="alert"> 
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--
+            TODO:
+                Add import existing section
+        -->
+        
+        <script src="assets/javascript/jquery.min.js"></script>
+        <script src="assets/javascript/bootstrap.min.js"></script>
+        <script src="assets/javascript/install.js"></script>
+    </body>
+</html>

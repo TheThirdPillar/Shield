@@ -1,0 +1,23 @@
+* {
+    font-family: 'Turret Road', cursive;
+  }
+
+.extension-container {
+    margin: 10px !important;
+    width: 400px;
+    padding: 40px;
+    box-sizing: border-box;
+    border-radius: 10px;
+  }
+
+.qr_icon {
+    width: 128px;
+    height:128px;
+    margin: 0px auto;
+    display: block;
+    margin: 15px auto 10px;
+  }
+
+.qr_icon img {
+    height: 128px;
+  }
