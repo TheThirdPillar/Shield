@@ -10,10 +10,10 @@ var Application = require('../models/application')
 var applicationController = require('../controllers/applicationController')
 
 /* Custom functions */
-var isVerifiedSignature = (req, res, next) => {
-    passport.authenticate('publicKeySignature', (error, user, info) => {
+var isAuthenticated = (req, res, next) => {
+    passport.authenticate(['publicKeySignature', 'jwt'], (error, user, info) => {
         if (error) return res.status(500).json({status: 'FAILED', message: 'Unable to authenticate at the moment.'})
-        if (!user) return res.status(401).json({status: 'FAILED', message: 'Invalid signature or user not found.'})
+        if (!user) return res.status(401).json({status: 'FAILED', message: 'Invalid signature/token or user not found.'})
         req.user = user
         return next()
     })(req, res, next)
@@ -42,7 +42,7 @@ router.post('/', [
         }),
     body('publicKey')
         .notEmpty()
-], isVerifiedSignature, applicationController.registerApplication)
+], isAuthenticated, applicationController.registerApplication)
 
 
 router.get('/listen/:appId/:functionName', [
@@ -52,9 +52,11 @@ router.get('/listen/:appId/:functionName', [
         .notEmpty(), // TODO: Function should be registered with the above returned application
     query('search')
         .notEmpty()
-], applicationController.applicationGetter)
+], isAuthenticated, applicationController.applicationGetter)
 
 
+// Post requests should be authenticated and 
+// authentication should append userData to request
 router.post('/listen/:appId/:functionName', [
     param('appId')
         .notEmpty(), // TODO: Add a custom verified to check app exists
@@ -62,6 +64,6 @@ router.post('/listen/:appId/:functionName', [
         .notEmpty(), // TODO: Function should be registered with the above returned application
     body('data')
         .notEmpty()
-], applicationController.applicationSetter)
+], isAuthenticated, applicationController.applicationSetter)
 
 module.exports = router

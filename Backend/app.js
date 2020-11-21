@@ -14,6 +14,7 @@ var indexRouter = require('./routes/index')
 var usersRouter = require('./routes/users')
 var applicationRouter = require('./routes/application')
 var communityRouter = require('./routes/commnuity')
+var skillRouter = require('./routes/skill')
 
 var app = express();
 
@@ -43,6 +44,7 @@ app.use('/', indexRouter)
 app.use('/user', usersRouter)
 app.use('/application', applicationRouter)
 app.use('/community', communityRouter)
+app.use('/skill', skillRouter)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

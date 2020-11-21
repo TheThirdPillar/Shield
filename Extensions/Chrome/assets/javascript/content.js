@@ -6,6 +6,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             title: "Application Login",
             text: "Allow application to login ?",
             icon: "info",
+            closeOnClickOutside: false,
             content: {
                 element: "input",
                 attributes: {

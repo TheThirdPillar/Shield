@@ -10,9 +10,7 @@ var tokenSecret = require('../config/jwt')
 const User = require('../models/user')
 const VerificationCode = require('../models/verificationcode')
 const Application = require('../models/application')
-const UserApplication = require('../models/userapplication');
-const userapplication = require('../models/userapplication');
-const application = require('../models/application');
+const UserApplication = require('../models/userapplication')
 
 // Function to register user
 exports.registerUser = (req, res) => {

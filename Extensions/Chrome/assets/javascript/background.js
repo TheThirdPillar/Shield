@@ -84,6 +84,7 @@ function handleLogin(applicationId) {
                     .catch((error) => {
                         // TODO: Server errors and failures handlers
                         console.error(error)
+                        defaultIcon()
                     })
                 })
             })

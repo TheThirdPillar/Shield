@@ -1,7 +1,12 @@
+var jwt = require('jsonwebtoken')
 var CustomStrategy = require('passport-custom').Strategy
+
+/* Configurations and such */
+var tokenSecret = require('../../config/jwt')
 
 /* Data Models */
 var User = require('../../models/user')
+var UserApplication = require('../../models/userapplication')
 
 var myLocalConfig = (passport) => {
 
@@ -33,6 +38,28 @@ var myLocalConfig = (passport) => {
         }
     ))
 
+    passport.use('jwt', new CustomStrategy(
+        (req, callback) => {
+            const authHeader = req.headers['authorization']
+            const token = authHeader && authHeader.split(' ')[1]
+            if (token == null) {
+                return callback(null, null)
+            }  
+            jwt.verify(token, tokenSecret.secret, (err, user) => {
+                if (err) {
+                    return callback(err, null)
+                }
+                // TODO: Seems unnecessary, maybe store applicationData
+                // in the token. Needs some thinking.
+                UserApplication.findApplicationDataBySession(token, (error, userapplication) => {
+                    if (error) {
+                        return callback(error, null)
+                    }
+                    return callback(null, userapplication)
+                })
+            })
+        }
+    ))
 }
 
 module.exports = myLocalConfig

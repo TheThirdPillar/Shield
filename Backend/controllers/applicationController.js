@@ -57,12 +57,33 @@ exports.applicationSetter = (req, res) => {
     // This is to handle post requests, 
     // TODO: Automated discovery
     try {
+
+        let formData = req.body
+        let userapplication = req.user
         if (req.params['appId'] === 'identity') {
             if (req.params['functionName'] === 'registerUser') {
-                let userData = req.body.data
-                let applicationId = req.params['appId']
-                identity.registerUser(userData, applicationId, (response) => {
-                    return res.status(200).json(response)
+                identity.registerUser(formData, userapplication, (response) => {
+                    if (response.status === 'SUCCESS') {
+                        return res.status(200).json(response)
+                    } else {
+                        return res.status(400).json(response)
+                    }
+                })
+            } else if (req.params['functionName'] === 'addEducationRecord') {
+                identity.addEducationRecord(formData, userapplication, (response) => {
+                    if (response.status === 'SUCCESS') {
+                        return res.status(200).json(response)
+                    } else {
+                        return res.status(400).json(response)
+                    }
+                })
+            } else if (req.params['functionName'] === 'addProfessionalRecord') {
+                identity.addProfessionalRecord(formData, userapplication, (response) => {
+                    if (response.status === 'SUCCESS') {
+                        return res.status(200).json(response)
+                    } else {
+                        return res.status(400).json(response)
+                    }
                 })
             } else {
                 return res.status(400).json({status: 'FAILED', message: 'Invalid function name'})
