@@ -49,9 +49,7 @@ router.get('/listen/:appId/:functionName', [
     param('appId')
         .notEmpty(), // TODO: Add a custom verified to check app exists
     param('functionName')
-        .notEmpty(), // TODO: Function should be registered with the above returned application
-    query('search')
-        .notEmpty()
+        .notEmpty() // TODO: Function should be registered with the above returned application
 ], isAuthenticated, applicationController.applicationGetter)
 
 

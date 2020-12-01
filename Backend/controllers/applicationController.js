@@ -1,3 +1,4 @@
+const { response } = require('express')
 const { validationResult } = require('express-validator')
 
 /* Application chaincodes */
@@ -5,6 +6,7 @@ const identity = require('../chaincode/identity')
 
 /* Data models */
 var Application = require('../models/application')
+const userapplication = require('../models/userapplication')
 
 exports.registerApplication = (req, res) => {
     
@@ -41,6 +43,24 @@ exports.applicationGetter = (req, res) => {
 
                 identity.searchApplicationUserByUsername(searchedUsername, applicationId, (response) => {
                     return res.status(200).json(response)
+                })
+            } else if (req.params['functionName'] === 'getUserData') {
+                let userapplication = req.user
+                identity.getUserData(userapplication, (response) => {
+                    if (response.status === 'SUCCESS') {
+                        return res.status(200).json(response)
+                    } else {
+                        return res.status(400).json(response)
+                    }
+                })
+            } else if (req.params['functionName'] === 'getRequests') {
+                let userapplication = req.user
+                identity.getAllRequests(userapplication, (response) => {
+                    if (response.status === 'SUCCESS') {
+                        return res.status(200).json(response)
+                    } else {
+                        return res.status(400).json(response)
+                    }
                 })
             } else {
                 return res.status(400).json({status: 'FAILED', message: 'Invalid function name'})
@@ -85,6 +105,38 @@ exports.applicationSetter = (req, res) => {
                         return res.status(400).json(response)
                     }
                 })
+            } else if (req.params['functionName'] === 'addSkillRecord') {
+                identity.addSkillRecord(formData, userapplication, (response) => {
+                    if (response.status === 'SUCCESS') {
+                        return res.status(200).json(response)
+                    } else {
+                        return res.status(400).json(response)
+                    }
+                })
+            } else if (req.params['functionName'] === 'updateUser') {
+                identity.updateUser(formData, userapplication, (response) => {
+                    if (response.status === 'SUCCESS') {
+                        return res.status(200).json(response)
+                    } else {
+                        return res.status(400).json(response)
+                    }
+                })
+            } else if (req.params['functionName'] === 'addDocument') {
+                identity.addDocument(formData, userapplication, (response) => {
+                    if (response.status === 'SUCCESS') {
+                        return res.status(200).json(response)
+                    } else {
+                        return res.status(400).json(response)
+                    }
+                })
+            } else if (req.params['functionName'] === 'requestVerification') {
+                identity.requestVerification(formData, userapplication, (response) => {
+                    if (response.status === 'SUCCESS') {
+                        return res.status(200).json(response)
+                    } else {
+                        return res.status(400).json(response)
+                    }
+                })
             } else {
                 return res.status(400).json({status: 'FAILED', message: 'Invalid function name'})
             }
@@ -92,6 +144,7 @@ exports.applicationSetter = (req, res) => {
             return res.status(400).json({status: 'FAILED', message: 'Invalid application id'})
         }
     } catch (error) {
+        console.log(error)
         return res.status(500).json({status: 'FAILED', error: error })
     }
 }

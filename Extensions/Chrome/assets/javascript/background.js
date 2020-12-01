@@ -1,5 +1,7 @@
 const domain = "http://localhost:3000"
 
+// TODO: Promise rejects should return of type Error
+
 function generateKeys () {
     try {
         let userKey = keyPair();
@@ -17,6 +19,102 @@ function generateId (len) {
     var arr = new Uint8Array((len || 40) / 2);
     window.crypto.getRandomValues(arr);
     return Array.from(arr, dec2hex).join('');
+}
+
+function encryptData(data) {
+    return new Promise((resolve, reject) => {
+        try {
+            chrome.storage.local.get(["shieldAccount"], (result) => {
+                chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+                    if (!tabs) return reject('Unable to connect to the content script.')
+                    chrome.tabs.sendMessage(tabs[0].id, {query: 'userPassword'}, (response) => {
+                        if (response.status !== 'SUCCESS') return reject("User declined gracefully.")
+                        let userPublicKey = result.shieldAccount.publicKey
+                        let decryptedPrivateKey = CryptoJS.AES.decrypt(result.shieldAccount.privateKeyEncrypted, response.password).toString(CryptoJS.enc.Utf8)
+    
+                        // Generate 20 character key to encrypt the data
+                        var aesKey = generateId(20)
+                        // Encrypt the file
+                        let encryptedFile = CryptoJS.AES.encrypt(data, aesKey).toString()
+                        // Encrypt the key
+                        let encryptedKey = encryptPublic(aesKey, userPublicKey, decryptedPrivateKey)
+                        // Return the encryptedkey and data
+                        let reply = {}
+                        reply.encryptedFile = encryptedFile
+                        reply.encryptedKey = encryptedKey.data + "::" + encryptedKey.nonce
+                        reply.status = 'SUCCESS'
+                        return resolve(reply) 
+                    })
+                })
+            })
+        } catch (error) {
+            console.error(error)
+            return reject('Unable to encrypt record at the moment.')
+        }
+    })
+}
+
+function shareKey(encryptedKey, receiverPublicKey) {
+    return new Promise((resolve, reject) => {
+        try {
+            chrome.storage.local.get(["shieldAccount"], (result) => {
+                chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+                    if (!tabs) return reject('Unable to connect to the content script.')
+                    chrome.tabs.sendMessage(tabs[0].id, {query: 'userPassword'}, (response) => {
+                        if (response.status !== 'SUCCESS') return reject("User declined gracefully.")
+                        let userPublicKey = result.shieldAccount.publicKey
+                        let decryptedPrivateKey = CryptoJS.AES.decrypt(result.shieldAccount.privateKeyEncrypted, response.password).toString(CryptoJS.enc.Utf8)
+                        // Split the key into data and nonce
+                        let keyToBeShared = encryptedKey.split('::')
+                        // Decrypt the key to be shared
+                        let decryptedKeyToBeShared = decryptPrivate(keyToBeShared[0], keyToBeShared[1], userPublicKey, decryptedPrivateKey)
+                        let encryptedKeyToBeShared = encryptPublic(decryptedKeyToBeShared, receiverPublicKey, decryptedPrivateKey)
+
+                        let reply = {}
+                        reply.status = 'SUCCESS'
+                        reply.sharedKey = encryptedKeyToBeShared.data + "::" + encryptedKeyToBeShared.nonce
+                        reply.receiverPublicKey = receiverPublicKey
+                        return resolve(reply)
+                    })                    
+                })
+            })
+        } catch (error) {
+            return reject('Unable to share key at the moment.')
+        }
+    })
+}
+
+function decryptData(encryptedData, encryptedKey, originalPublicKey) {
+    return new Promise((resolve, reject) => {
+        try {
+            chrome.storage.local.get(['shieldAccount'], (result) => {
+                chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+                    if (!tabs) return reject('Unable to connect to the content script.')
+                    chrome.tabs.sendMessage(tabs[0].id, {query: 'userPassword'}, (response) => {
+                        if (response.status !== 'SUCCESS') return reject("User declined gracefully.")
+                        let userPublicKey = result.shieldAccount.publicKey
+                        let decryptedPrivateKey = CryptoJS.AES.decrypt(result.shieldAccount.privateKeyEncrypted, response.password).toString(CryptoJS.enc.Utf8)
+                        // Check case
+                        if (!originalPublicKey) {
+                            originalPublicKey = userPublicKey
+                        }
+                        // Split the key to get data and nonce and then decrypt the said key
+                        let actualEncryptedKey = encryptedKey.split('::')
+                        let actualKey = decryptPrivate(actualEncryptedKey[0], actualEncryptedKey[1], originalPublicKey, decryptedPrivateKey)
+                        // Decrypt the file
+                        let decryptedData = CryptoJS.AES.decrypt(encryptedData, actualKey).toString(CryptoJS.enc.Utf8)
+
+                        let reply = {}
+                        reply.status = 'SUCCESS'
+                        reply.decryptedData = decryptedData
+                        return resolve(reply)
+                    })
+                })
+            })
+        } catch (error) {
+            return reject('Unable to decrypt data at the moment.')
+        }
+    })
 }
 
 function addAccount(accountDetails) {
@@ -171,6 +269,59 @@ chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => 
             .then((result) => {
                 sendResponse(result)
             })
+    }
+
+    if (request.query === 'encrypt') {
+        changeIcon()
+        encryptData(request.data)
+        .then((result) => {
+            defaultIcon()
+            if (result && result.status && result.status === 'SUCCESS')  {
+                console.log("Yes")
+                console.log(result)
+                sendResponse(result)
+            } else {
+                response.status = 'FAILED',
+                response.message = 'Unable to encrypt at this moment'
+                sendResponse(response)
+            }
+        })
+    }
+
+    if (request.query === 'share') {
+        changeIcon()
+        console.log(request.data)
+        shareKey(request.data.encryptedKey, request.data.receiverPublicKey)
+        .then((result) => {
+            defaultIcon()
+            if (result && result.status && result.status === 'SUCCESS')  {
+                console.log("Yes")
+                console.log(result)
+                sendResponse(result)
+            } else {
+                response.status = 'FAILED',
+                response.message = 'Unable to share key at the moment.'
+                sendResponse(response)
+            }
+        })
+    }
+
+    if (request.query === 'decrypt') {
+        changeIcon()
+        console.log(request.data)
+        decryptData(request.data.encryptedData, request.data.encryptedKey, request.data.originalPublicKey)
+        .then((result) => {
+            defaultIcon()
+            if (result && result.status && result.status === 'SUCCESS')  {
+                console.log("Yes")
+                console.log(result)
+                sendResponse(result)
+            } else {
+                response.status = 'FAILED',
+                response.message = 'Unable to decrypt data at the moment.'
+                sendResponse(response)
+            }
+        })
     }
 
     return true

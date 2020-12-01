@@ -3,8 +3,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     if (request.query == 'userPassword') {
         swal({
-            title: "Application Login",
-            text: "Allow application to login ?",
+            title: "Authenticate Action ?",
+            text: "Enter password to authenticate.",
             icon: "info",
             closeOnClickOutside: false,
             content: {
@@ -14,7 +14,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     type: "password"
                 }
             },
-            buttons: ["Nope", "Confirm"]
+            buttons: ["Nope", "Confirm"],
+            inputAttributes: {
+                autocapitalize: 'off',
+                autocorrect: 'off'
+            }
         })
         .then((password) => {
             if (password) {

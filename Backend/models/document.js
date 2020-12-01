@@ -3,14 +3,15 @@ const { modelName } = require('./application')
 var Schema = mongoose.Schema
 
 var DocumentSchema = new Schema({
-    multihash: { type: String, required: true },
-    owner: { type: Schema.Types.ObjectId, ref: 'User' },
-    signed: { type: Boolean, default: false },
-    signedBy: { type: Schema.Types.ObjectId, ref: 'User' },
-    encryptedUserKey: { type: String },
-    signeeKey: { type: String },
+    encryptedFile: { type: String, required: true },
+    owner: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    record: { type: Schema.Types.ObjectId, ref: 'Record', required: true },
+    signed: { type: Schema.Types.ObjectId, ref: 'Request' },
+    encryptedKey: { type: String, required: true },
     dateCreated: { type: Date, required: true },
-    dateSigned: { type: Date, required: true }
+    dateSigned: { type: Date },
+    signedBy: { type: Schema.Types.ObjectId, ref: 'User'},
+    signature: { type: String }
 })
 
 module.exports = mongoose.model('Document', DocumentSchema)

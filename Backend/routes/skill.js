@@ -1,7 +1,7 @@
 var express = require('express')
 var router = express.Router()
 var passport = require('passport')
-const { query } = require('express-validator')
+const { body, query } = require('express-validator')
 
 /* Controllers */
 var skillController = require('../controllers/skillController')
@@ -21,5 +21,7 @@ router.get('/', [
     query('search')
         .notEmpty()
 ], isAuthenticated, skillController.searchSkill)
-  
+
+router.post('/', skillController.addSkill)
+
 module.exports = router

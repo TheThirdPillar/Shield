@@ -5,7 +5,7 @@ var UserSchema = new Schema({
     email: { type: String, required: true, unique: true },
     publicKey: { 
         type: String, 
-        require: true, 
+        required: true, 
         unique: true,
         index: {
             unique: true,
