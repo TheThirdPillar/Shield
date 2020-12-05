@@ -48,7 +48,6 @@ function encryptData(data) {
                 })
             })
         } catch (error) {
-            console.error(error)
             return reject('Unable to encrypt record at the moment.')
         }
     })
@@ -168,10 +167,10 @@ function handleLogin(applicationId) {
                         //TODO: Push JWT token also into sessions of shield storage.
                         if (json.status === 'SUCCESS') {
                             if (result.shieldAccount.shieldDB.includes(applicationId)) {
-                                result.shieldAccount.sessions.push({application: applicationId, session: json.userApplication.sessionToken})
+                                result.shieldAccount.sessions.push({application: applicationId, session: json.token})
                             } else {
                                 result.shieldAccount.shieldDB.push(applicationId)
-                                result.shieldAccount.sessions.push({application: applicationId, session: json.userApplication.sessionToken})
+                                result.shieldAccount.sessions.push({application: applicationId, session: json.token})
                             }
                             chrome.storage.local.set({shieldAccount: result.shieldAccount}, () => {})
                             return resolve(json)
@@ -181,14 +180,13 @@ function handleLogin(applicationId) {
                     })
                     .catch((error) => {
                         // TODO: Server errors and failures handlers
-                        console.error(error)
                         defaultIcon()
                     })
                 })
             })
         })
     }).catch(error => {
-        console.error(error)
+        defaultIcon()
     })
 }
 
@@ -251,24 +249,24 @@ chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => 
     if (request.query === 'shieldLogin') {
         changeIcon()
         handleLogin(request.applicationId)
-            .then((result) => {
-                //TODO: Better response
-                defaultIcon()
-                if (result && result.status && result.status === 'SUCCESS')  {
-                    sendResponse(result)
-                } else {
-                    response.status = 'FAILED',
-                    response.message = 'Unable to login at this moment'
-                    sendResponse(response)
-                }
-            })
+        .then((result) => {
+            //TODO: Better response
+            defaultIcon()
+            if (result && result.status && result.status === 'SUCCESS')  {
+                sendResponse(result)
+            } else {
+                response.status = 'FAILED',
+                response.message = 'Unable to login at this moment'
+                sendResponse(response)
+            }
+        })
     }
 
     if (request.query === 'shieldLogout') {
         handleLougout(request.applicationId)
-            .then((result) => {
-                sendResponse(result)
-            })
+        .then((result) => {
+            sendResponse(result)
+        })
     }
 
     if (request.query === 'encrypt') {
@@ -277,8 +275,6 @@ chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => 
         .then((result) => {
             defaultIcon()
             if (result && result.status && result.status === 'SUCCESS')  {
-                console.log("Yes")
-                console.log(result)
                 sendResponse(result)
             } else {
                 response.status = 'FAILED',
@@ -290,13 +286,10 @@ chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => 
 
     if (request.query === 'share') {
         changeIcon()
-        console.log(request.data)
         shareKey(request.data.encryptedKey, request.data.receiverPublicKey)
         .then((result) => {
             defaultIcon()
             if (result && result.status && result.status === 'SUCCESS')  {
-                console.log("Yes")
-                console.log(result)
                 sendResponse(result)
             } else {
                 response.status = 'FAILED',
@@ -308,13 +301,10 @@ chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => 
 
     if (request.query === 'decrypt') {
         changeIcon()
-        console.log(request.data)
         decryptData(request.data.encryptedData, request.data.encryptedKey, request.data.originalPublicKey)
         .then((result) => {
             defaultIcon()
             if (result && result.status && result.status === 'SUCCESS')  {
-                console.log("Yes")
-                console.log(result)
                 sendResponse(result)
             } else {
                 response.status = 'FAILED',

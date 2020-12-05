@@ -38,15 +38,14 @@ exports.applicationGetter = (req, res) => {
         if (req.params['appId'] === 'identity') {
             if (req.params['functionName'] === 'searchApplicationUserByUsername') {
                 let searchedUsername = req.query['search']
-                let applicationId = req.params['appId']
                 if (!searchedUsername) return res.status(400).json({status: "FAILED", message: "Please provide username in request body."})
 
-                identity.searchApplicationUserByUsername(searchedUsername, applicationId, (response) => {
+                identity.searchApplicationUserByUsername(searchedUsername, (response) => {
                     return res.status(200).json(response)
                 })
             } else if (req.params['functionName'] === 'getUserData') {
-                let userapplication = req.user
-                identity.getUserData(userapplication, (response) => {
+                let user = req.user
+                identity.getUserData(user, (response) => {
                     if (response.status === 'SUCCESS') {
                         return res.status(200).json(response)
                     } else {
@@ -69,6 +68,7 @@ exports.applicationGetter = (req, res) => {
             return res.status(400).json({status: 'FAILED', message: 'Invalid application id'})
         }
     } catch (error) {
+        console.error(error)
         return res.status(500).json({status: 'FAILED', error: error })
     }
 }
@@ -79,10 +79,10 @@ exports.applicationSetter = (req, res) => {
     try {
 
         let formData = req.body
-        let userapplication = req.user
+        let user = req.user
         if (req.params['appId'] === 'identity') {
             if (req.params['functionName'] === 'registerUser') {
-                identity.registerUser(formData, userapplication, (response) => {
+                identity.registerUser(formData, user, (response) => {
                     if (response.status === 'SUCCESS') {
                         return res.status(200).json(response)
                     } else {
@@ -90,7 +90,7 @@ exports.applicationSetter = (req, res) => {
                     }
                 })
             } else if (req.params['functionName'] === 'addEducationRecord') {
-                identity.addEducationRecord(formData, userapplication, (response) => {
+                identity.addEducationRecord(formData, user, (response) => {
                     if (response.status === 'SUCCESS') {
                         return res.status(200).json(response)
                     } else {
@@ -98,7 +98,7 @@ exports.applicationSetter = (req, res) => {
                     }
                 })
             } else if (req.params['functionName'] === 'addProfessionalRecord') {
-                identity.addProfessionalRecord(formData, userapplication, (response) => {
+                identity.addProfessionalRecord(formData, user, (response) => {
                     if (response.status === 'SUCCESS') {
                         return res.status(200).json(response)
                     } else {
@@ -106,7 +106,7 @@ exports.applicationSetter = (req, res) => {
                     }
                 })
             } else if (req.params['functionName'] === 'addSkillRecord') {
-                identity.addSkillRecord(formData, userapplication, (response) => {
+                identity.addSkillRecord(formData, user, (response) => {
                     if (response.status === 'SUCCESS') {
                         return res.status(200).json(response)
                     } else {
@@ -114,7 +114,7 @@ exports.applicationSetter = (req, res) => {
                     }
                 })
             } else if (req.params['functionName'] === 'updateUser') {
-                identity.updateUser(formData, userapplication, (response) => {
+                identity.updateUser(formData, user, (response) => {
                     if (response.status === 'SUCCESS') {
                         return res.status(200).json(response)
                     } else {
@@ -122,7 +122,7 @@ exports.applicationSetter = (req, res) => {
                     }
                 })
             } else if (req.params['functionName'] === 'addDocument') {
-                identity.addDocument(formData, userapplication, (response) => {
+                identity.addDocument(formData, user, (response) => {
                     if (response.status === 'SUCCESS') {
                         return res.status(200).json(response)
                     } else {
@@ -130,7 +130,7 @@ exports.applicationSetter = (req, res) => {
                     }
                 })
             } else if (req.params['functionName'] === 'requestVerification') {
-                identity.requestVerification(formData, userapplication, (response) => {
+                identity.requestVerification(formData, user, (response) => {
                     if (response.status === 'SUCCESS') {
                         return res.status(200).json(response)
                     } else {

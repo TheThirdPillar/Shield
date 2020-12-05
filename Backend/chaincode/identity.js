@@ -7,35 +7,64 @@ const UserSkillData = require('../models/userskilldata')
 const Document = require('../models/document')
 const Request = require('../models/request')
 const User = require('../models/user')
+const Identity = require('../models/identity')
 const request = require('../models/request')
+const identity = require('../models/identity')
 
 // TODO: Application Search will be repeated here,
 // must be updated once route validators are improved.
 
 module.exports = (() => {
     return {
-        searchApplicationUserByUsername: (searchedUsername, applicationId, callback) => {
+        searchApplicationUserByUsername: (searchedUsername, callback) => {
             try {
-                Application.findApplicationById(applicationId, (error, application) => {
+                Identity.findByUsername(searchedUsername, (error, user) => {
                     if (error) {
                         let response = {
-                            status: "FAILED",
-                            error: error
+                            status: 'FAILED',
+                            errors: error
                         }
                         return callback(response)
                     } else {
-                        UserApplication.findAllUserByApplication(application._id, (error, allDataUserApplication) => {
+                        let response = {
+                            status: 'SUCCESS',
+                            user: user
+                        }
+                        return callback(response)
+                    }
+                })
+            } catch (error) {
+                let response = {
+                    status: "FAILED",
+                    error: error
+                }
+                console.log(error)
+                callback(response)
+            }
+        },
+        registerUser: (formData, user, callback) => {
+            try {
+                Identity.findByShieldUser(user, (error, user) => {
+                    if (error) {
+                        let response = {
+                            status: 'FAILED',
+                            errors: error
+                        }
+                        return callback(response)
+                    } else {
+                        let {username, ...profile} = formData
+                        user.username = username
+                        user.profile = profile
+                        user.save((error, user) => {
                             if (error) {
                                 let response = {
-                                    status: "FAILED",
-                                    error: error
+                                    status: 'FAILED',
+                                    errors: error
                                 }
                                 return callback(response)
                             } else {
-                                let user = allDataUserApplication.filter(userApplication => (userApplication && userApplication.applicationData && userApplication.applicationData.profile && userApplication.applicationData.profile.username === searchedUsername))
-        
                                 let response = {
-                                    status: "SUCCESS",
+                                    status: 'SUCCESS',
                                     user: user
                                 }
                                 return callback(response)
@@ -44,46 +73,6 @@ module.exports = (() => {
                     }
                 })
             } catch (error) {
-                let response = {
-                    status: "FAILED",
-                    error: error
-                }
-                console.log(error)
-                callback(response)
-            }
-        },
-        registerUser: (formData, userapplication, callback) => {
-            try {
-
-                if (userapplication.applicationData && userapplication.applicationData.profile && userapplication.applicationData.profile.username) {
-                    let response = {
-                        status: 'FAILED',
-                        error: {
-                            msg: 'Username once registered cannot be changed.'
-                        }
-                    }
-                    return callback(response)
-                }
-
-                Object.assign(userapplication.applicationData, {'profile': formData})
-                userapplication.markModified('applicationData')
-                userapplication.save((error, saved) => {
-                    if (error) {
-                        let response = {
-                            status: "FAILED",
-                            error: error
-                        }
-                        return callback(response)
-                    } else {
-                        let response = {
-                            status: "SUCCESS",
-                            message: "Successfully updated the user data",
-                            userData: saved
-                        }
-                        return callback(response)
-                    }
-                })
-            } catch (error) {
                 console.log(error)
                 let response = {
 
@@ -93,7 +82,7 @@ module.exports = (() => {
                 callback(response)
             }
         },
-        addEducationRecord: (formData, userapplication, callback) => {
+        addEducationRecord: (formData, user, callback) => {
             try {
 
                 let record = new Record({
@@ -109,21 +98,31 @@ module.exports = (() => {
                         }
                         return callback(response)
                     } else {
-                        userapplication.educationRecord.push(savedRecord)
-                        userapplication.markModified('educationRecord')
-                        userapplication.save((error, saved) => {
+                        Identity.findByShieldUser(user, (error, user) => {
                             if (error) {
                                 let response = {
-                                    status: 'FAILED',
-                                    error: error
+                                    status: 'SUCCSESS',
+                                    errors: error
                                 }
                                 return callback(response)
                             } else {
-                                let response = {
-                                    status: 'SUCCESS',
-                                    message: 'Record successfully added to the user data.'
-                                }
-                                return callback(response)
+                                user.educationRecords.push(savedRecord)
+                                user.save((error, user) => {
+                                    if (error) {
+                                        let response = {
+                                            status: 'FAILED',
+                                            errors: error
+                                        }
+                                        return callback(response)
+                                    } else {
+                                        let response = {
+                                            status: 'SUCCESS',
+                                            user: user,
+                                            message: 'Successfully added the educational record.'
+                                        }
+                                        return callback(response)
+                                    }
+                                })    
                             }
                         })
                     }
@@ -136,7 +135,7 @@ module.exports = (() => {
                 return callback(response)
             }
         },
-        addProfessionalRecord: (formData, userapplication, callback) => {
+        addProfessionalRecord: (formData, user, callback) => {
             try {
 
                 let record = new Record({
@@ -152,21 +151,31 @@ module.exports = (() => {
                         }
                         return callback(response)
                     } else {
-                        userapplication.professionalRecord.push(savedRecord)
-                        userapplication.markModified('professionalRecord')
-                        userapplication.save((error, saved) => {
+                        Identity.findByShieldUser(user, (error, user) => {
                             if (error) {
                                 let response = {
                                     status: 'FAILED',
-                                    error: error
+                                    errors: error
                                 }
                                 return callback(response)
                             } else {
-                                let response = {
-                                    status: 'SUCCESS',
-                                    message: 'Record successfully added to the user data.'
-                                }
-                                return callback(response)
+                                user.professionalRecords.push(savedRecord)
+                                user.save((error, user) => {
+                                    if (error) {
+                                        let response = {
+                                            status: 'FAILED',
+                                            errors: error
+                                        }
+                                        return callback(response)
+                                    } else {
+                                        let response = {
+                                            status: 'SUCCESS',
+                                            user: user,
+                                            message: 'Successfully added the professional record.'
+                                        }
+                                        return callback(response)
+                                    }
+                                })
                             }
                         })
                     }
@@ -179,12 +188,12 @@ module.exports = (() => {
                 return callback(response)
             }
         },
-        addSkillRecord: (formData, userapplication, callback) => {
+        addSkillRecord: (formData, user, callback) => {
             try {
                 let userskilldata = new UserSkillData({
                     data: formData
                 })
-                userskilldata.save((error, document) => {
+                userskilldata.save((error, skilldata) => {
                     if (error) {
                         let response = {
                             status: 'FAILED',
@@ -192,9 +201,7 @@ module.exports = (() => {
                         }
                         return callback(response)
                     } else {
-                        userapplication.skillRecord.push(document)
-                        userapplication.markModified('skillRecord')
-                        userapplication.save((error, saved) => {
+                        Identity.findByShieldUser(user, (error, user) => {
                             if (error) {
                                 let response = {
                                     status: 'FAILED',
@@ -202,11 +209,23 @@ module.exports = (() => {
                                 }
                                 return callback(response)
                             } else {
-                                let response = {
-                                    status: 'SUCCESS',
-                                    message: 'Skill record successfully saved to user data.'
-                                }
-                                return callback(response)
+                                user.skillRecords.push(skilldata)
+                                user.save((error, user) => {
+                                    if (error) {
+                                        let response = {
+                                            status: 'FAILED',
+                                            errors: error
+                                        }
+                                        return callback(response)
+                                    } else {
+                                        let response = {
+                                            status: 'SUCCESS',
+                                            user: user,
+                                            message: 'Successfully added the skill record.'
+                                        }
+                                        return callback(response)
+                                    }
+                                })
                             }
                         })
                     }
@@ -220,13 +239,13 @@ module.exports = (() => {
                 return callback(response)
             }
         },
-        getUserData: (userapplication, callback) => {
+        getUserData: (user, callback) => {
             try {
-                UserApplication.findById(userapplication._id)
-                .populate({path: 'educationRecord', populate: {path: 'documents', populate: {path: 'signed'}}})
-                .populate({path: 'professionalRecord', populate: {path: 'documents', populate: {path: 'signed'}}})
-                .populate({path: 'skillRecord'})
-                .exec((error, userData) => {
+                Identity.findOne({shieldUser: user._id})
+                .populate({path: 'educationRecords', populate: {path: 'documents', populate: {path: 'signed'}}})
+                .populate({path: 'professionalRecords', populate: {path: 'documents', populate: {path: 'signed'}}})
+                .populate({path: 'skillRecords'})
+                .exec((error, identityData) => {
                     if (error) {
                         let response = {
                             status: 'FAILED',
@@ -234,14 +253,36 @@ module.exports = (() => {
                         }
                         return callback(response)
                     } else {
-                        let response = {
-                            status: 'SUCCESS',
-                            userData: userData
+                        if (!identityData) {
+                            let newIdentityUser = new Identity({
+                                shieldUser: user._id
+                            })
+                            newIdentityUser.save((error, savedDocument) => {
+                                if (error) {
+                                    let response = {
+                                        status: 'FAILED',
+                                        errors: error
+                                    }
+                                    return callback(response)
+                                } else {
+                                    let response = {
+                                        status: 'SUCCESS',
+                                        user: savedDocument
+                                    }
+                                    return callback(response)
+                                }
+                            })
+                        } else {
+                            let response = {
+                                status: 'SUCCESS',
+                                user: identityData
+                            }
+                            return callback(response)
                         }
-                        return callback(response)
                     }
                 })
             } catch (error) {
+                console.error(error)
                 let response = {
                     status: 'FAILED',
                     errors: error

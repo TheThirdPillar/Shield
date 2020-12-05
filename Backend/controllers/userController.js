@@ -147,34 +147,35 @@ exports.loginUserWithApplication = (req, res) => {
                 UserApplication.findOne({user: req.user._id, application: application._id}, (error, userapplication) => {
                     if (error) {
                         return res.status(500).json({stat: 'FAILED', error: error})
-                    }
-                    let tokenData = {
-                        user: user.publicKey,
-                        application: application.appId
-                    }
-                    let token = jwt.sign(tokenData, tokenSecret.secret, { expiresIn: '1h' })
-                    // TODO: Applications may have conditions based on other applications
-                    if (!userapplication) {
-                        let newUserApplication = new UserApplication({
-                            user: req.user._id,
-                            application: application._id, 
-                            sessionToken: token
-                        })
-                        newUserApplication.save((error, userApp) => {
-                            if (error) {
-                                return res.status(500).json({stat: 'FAILED', error: error})
-                            }
-                            return res.status(200).json({status: "SUCCESS", userApplication: newUserApplication})
-                        })
                     } else {
-                        // sign JWT and return data
-                        userapplication.sessionToken = token
-                        userapplication.save((error, userApp) => {
-                            if (error) {
-                                return res.status(500).json({stat: 'FAILED', error: error})
-                            }
-                            return res.status(200).json({status: "SUCCESS", userApplication: userApp})
-                        })
+                        let tokenData = {
+                            user: user.publicKey,
+                            application: application.appId
+                        }
+                        let token = jwt.sign(tokenData, tokenSecret.secret, { expiresIn: '1h' })
+                        // TODO: Applications may have conditions based on other applications
+                        if (!userapplication) {
+                            let newUserApplication = new UserApplication({
+                                user: req.user._id,
+                                application: application._id, 
+                                sessionToken: token
+                            })
+                            newUserApplication.save((error, userApp) => {
+                                if (error) {
+                                    return res.status(500).json({stat: 'FAILED', error: error})
+                                }
+                                return res.status(200).json({status: "SUCCESS", token: userApp.sessionToken})
+                            })
+                        } else {
+                            // sign JWT and return data
+                            userapplication.sessionToken = token
+                            userapplication.save((error, userApp) => {
+                                if (error) {
+                                    return res.status(500).json({stat: 'FAILED', error: error})
+                                }
+                                return res.status(200).json({status: "SUCCESS", token: userApp.sessionToken})
+                            })
+                        }
                     }
                 })
             })
