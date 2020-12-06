@@ -148,3 +148,14 @@ exports.applicationSetter = (req, res) => {
         return res.status(500).json({status: 'FAILED', error: error })
     }
 }
+
+exports.applicationPutter = (req, res) => {
+    try {
+        let user = req.user
+        let formData = req.body
+        return res.status(200).json({status: 'SUCCESS'})
+    } catch (error) {
+        console.error(error)
+        return res.status(500).json({status: 'FAILED', error: error})
+    }
+}

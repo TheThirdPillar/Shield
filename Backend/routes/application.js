@@ -64,4 +64,15 @@ router.post('/listen/:appId/:functionName', [
         .notEmpty()
 ], isAuthenticated, applicationController.applicationSetter)
 
+// Put requests to update application states
+// TODO: Update some POST functions to move here
+router.put('/listen/:appId/:functionName', [
+    param('appId')
+        .notEmpty(), // TODO: Add a custom verified to check app exists
+    param('functionName')
+        .notEmpty(), // TODO: Function should be registered with the above returned application - Scope ?
+    body('data')
+        .notEmpty() // TODO: check for object (object._id) to be updated should exist
+], isAuthenticated, applicationController.applicationPutter)
+
 module.exports = router
