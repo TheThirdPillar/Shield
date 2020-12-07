@@ -2,6 +2,8 @@ var mongoose = require('mongoose')
 const { modelName } = require('./application')
 var Schema = mongoose.Schema
 
+// TODO: Only one verification requests per document.
+
 var DocumentSchema = new Schema({
     encryptedFile: { type: String, required: true },
     owner: { type: Schema.Types.ObjectId, ref: 'Identity', required: true },
@@ -10,7 +12,8 @@ var DocumentSchema = new Schema({
     encryptedKey: { type: String, required: true },
     dateCreated: { type: Date, required: true },
     dateSigned: { type: Date },
-    signedBy: { type: Schema.Types.ObjectId, ref: 'User'},
+    signedBy: { type: Schema.Types.ObjectId, ref: 'Identity'},
+    signedHash: { type: String },
     signature: { type: String }
 })
 

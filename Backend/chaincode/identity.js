@@ -517,6 +517,77 @@ module.exports = (() => {
                 }
                 return callback(response)
             }
-        } 
+        },
+        handleVerificationRequest: (formData, user, callback) => {
+            try {
+                Identity.findByShieldUser(user, (error, signingUser) => {
+                    if (error) {
+                        let response = {
+                            status: 'FAILED',
+                            errors: error
+                        }
+                        return callback(response)
+                    } else {
+                        Request.findById(formData.requestId, (error, request) => {
+                            if (error) {
+                                let response = {
+                                    status: 'FAILED',
+                                    errors: error
+                                }
+                                return callback(response)
+                            } else {
+                                request.status = formData.status
+                                request.dateOfAction = Date.now()
+                                request.save((error, request) => {
+                                    if (error) {
+                                        let response = {
+                                            status: 'FAILED',
+                                            errors: error
+                                        }
+                                        return callback(response)
+                                    } else {
+                                        Document.findById(request.document._id, (error, document) => {
+                                            if (error) {
+                                                let response = {
+                                                    status: 'FAILED',
+                                                    errors: error
+                                                }
+                                                return callback(response)
+                                            } else {
+                                                document.signature = formData.signature
+                                                document.signedHash = formData.hash
+                                                document.signedBy = signingUser._id
+                                                document.save((error, document) => {
+                                                    if (error) {
+                                                        let response = {
+                                                            status: 'FAILED',
+                                                            errors: error
+                                                        }
+                                                        return callback(response)
+                                                    } else {
+                                                        let response = {
+                                                            status: 'SUCCESS',
+                                                            document: document,
+                                                            request: request
+                                                        }
+                                                        return callback(response)
+                                                    }
+                                                })
+                                            }
+                                        })
+                                    }
+                                })
+                            }
+                        })
+                    }
+                })
+            } catch (error) {
+                let response = {
+                    status: 'FAILED',
+                    errors: error
+                }
+                return callback(error)
+            }
+        }
     }
 })() 

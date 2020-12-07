@@ -1,4 +1,3 @@
-const { response } = require('express')
 const { validationResult } = require('express-validator')
 
 /* Application chaincodes */
@@ -6,7 +5,6 @@ const identity = require('../chaincode/identity')
 
 /* Data models */
 var Application = require('../models/application')
-const userapplication = require('../models/userapplication')
 
 exports.registerApplication = (req, res) => {
     
@@ -25,7 +23,7 @@ exports.registerApplication = (req, res) => {
             if (error) {
                 return res.status(500).json({status: 'FAILED', message: 'Failed to register community at the moment.'})
             }
-            return res.status(200).json({status: 'SUCCESS', message: 'Successfully registered the application.'})
+            return res.status(200).json({status: 'SUCCESS', message: 'Successfully registered the application.', application: application})
         })
     } catch (error) {
         return res.status(500).json({status: 'FAILED', error: error})
@@ -34,6 +32,12 @@ exports.registerApplication = (req, res) => {
 
 exports.applicationGetter = (req, res) => {
     // TODO: If we automate this, we are golden
+
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+        return res.status(400).json({status: 'FAILED', errors: errors.array()})
+    }
+
     try {
         if (req.params['appId'] === 'identity') {
             if (req.params['functionName'] === 'searchApplicationUserByUsername') {
@@ -76,6 +80,13 @@ exports.applicationGetter = (req, res) => {
 exports.applicationSetter = (req, res) => {
     // This is to handle post requests, 
     // TODO: Automated discovery
+
+    const errors = validationResult(req)
+    console.log(errors)
+    if (!errors.isEmpty()) {
+        return res.status(400).json({status: 'FAILED', errors: errors.array()})
+    }
+
     try {
 
         let formData = req.body
@@ -150,10 +161,30 @@ exports.applicationSetter = (req, res) => {
 }
 
 exports.applicationPutter = (req, res) => {
+
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+        return res.status(400).json({status: 'FAILED', errors: errors.array()})
+    }
+
     try {
         let user = req.user
         let formData = req.body
-        return res.status(200).json({status: 'SUCCESS'})
+        if (req.params['appId'] === 'identity') {
+            if (req.params['functionName'] === 'handleVerification') {
+                identity.handleVerificationRequest(formData, user, (response)  => {
+                    if (response.status === 'SUCCESS') {
+                        return res.status(200).json(response)
+                    } else {
+                        return res.status(400).json(response)
+                    }
+                })
+            } else {
+                return res.status(400).json({status: 'FAILED', message: 'Invalid function name'})
+            }
+        } else {
+            return res.status(400).json({status: 'FAILED', message: 'Invalid application id'})
+        }
     } catch (error) {
         console.error(error)
         return res.status(500).json({status: 'FAILED', error: error})

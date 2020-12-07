@@ -116,6 +116,36 @@ function decryptData(encryptedData, encryptedKey, originalPublicKey) {
     })
 }
 
+function signData(data) {
+    return new Promise((resolve, reject) => {
+        try {
+            chrome.storage.local.get(['shieldAccount'], (result) => {
+                chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+                    if (!tabs) return reject('Unable to connect to the content script.')
+                    chrome.tabs.sendMessage(tabs[0].id, {query: 'userPassword'}, (response) => {
+                        if (response.status !== 'SUCCESS') return reject("User declined gracefully.")
+                        //  let userPublicKey = result.shieldAccount.publicKey
+                        let decryptedPrivateKey = CryptoJS.AES.decrypt(result.shieldAccount.privateKeyEncrypted, response.password).toString(CryptoJS.enc.Utf8)
+                        // Create hash and then sign record
+                        let hash = sha256.create()
+                        hash.update(JSON.stringify(data))
+                        let signature = signPrivate(hash.hex(), decryptedPrivateKey)
+
+                        let reply = {}
+                        reply.status = 'SUCCESS'
+                        reply.hash = hash.hex()
+                        reply.signature = signature
+
+                        return resolve(reply)
+                    })
+                })
+            })
+        } catch (error) {
+            return reject('Unable to sign data at the moment.')
+        }
+    })
+}
+
 function addAccount(accountDetails) {
     // We have to create a chromeStorage
     // privateKey should be encrypted.
@@ -190,7 +220,7 @@ function handleLogin(applicationId) {
     })
 }
 
-function handleLougout(applicationId) {
+function handleLogout(applicationId) {
     return new Promise((resolve, reject) => {
         chrome.storage.local.get(['shieldAccount'], (result) => {
             result.shieldAccount.sessions.splice(result.shieldAccount.sessions.findIndex(session => session.application === applicationId), 1)
@@ -263,7 +293,7 @@ chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => 
     }
 
     if (request.query === 'shieldLogout') {
-        handleLougout(request.applicationId)
+        handleLogout(request.applicationId)
         .then((result) => {
             sendResponse(result)
         })
@@ -309,6 +339,21 @@ chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => 
             } else {
                 response.status = 'FAILED',
                 response.message = 'Unable to decrypt data at the moment.'
+                sendResponse(response)
+            }
+        })
+    }
+
+    if (request.query === 'sign') {
+        changeIcon()
+        signData(request.data)
+        .then((result) => {
+            defaultIcon()
+            if (result && result.status && result.status === 'SUCCESS') {
+                sendResponse(result)
+            } else {
+                response.status = 'FAILED'
+                response.message = 'Unable to sign data at the moment.'
                 sendResponse(response)
             }
         })

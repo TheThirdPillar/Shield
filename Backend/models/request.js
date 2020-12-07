@@ -6,8 +6,8 @@ var RequestSchema = new Schema({
     document: {type: Schema.Types.ObjectId, ref: 'Document', required: true},
     requestedBy: {type: Schema.Types.ObjectId, ref: 'Identity',  required: true},
     requestedTo: {type: Schema.Types.ObjectId, ref: 'Identity', required: true},
-    sharedKey: {type: String, required: true},
-    status: {type: String, default: 'pending'},
+    sharedKey: {type: String},
+    status: {type: String, default: 'pending'}, // TODO: define possible types and restrictions
     requestedOn: {type: Date, default: Date.now() },
     dateOfAction: {type: Date}
 })
