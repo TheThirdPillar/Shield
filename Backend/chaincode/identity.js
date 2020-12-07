@@ -319,26 +319,19 @@ module.exports = (() => {
                 return callback(response)
             }
         },
-        addDocument: (formData, userapplication, callback) => {
+        addDocument: (formData, user, callback) => {
+            // TODO: Prevent document duplication - IPFS multihash can be used here ??
             try {
                 let recordId = formData.recordId
-                Record.findById(recordId, (error, record) => {
+                Identity.findByShieldUser(user, (error, identity) => {
                     if (error) {
                         let response = {
                             status: "FAILED",
-                            error: error
+                            errors: error
                         }
                         return callback(response)
                     } else {
-                        // TODO: if record save fails, we should undo document save as well or find ways to retry.
-                        let document = new Document({
-                            encryptedFile: formData.encryptedFile,
-                            owner: userapplication.user,
-                            encryptedKey: formData.encryptedKey,
-                            dateCreated: new Date(),
-                            record: record._id
-                        })
-                        document.save((error, document) => {
+                        Record.findById(recordId, (error, record) => {
                             if (error) {
                                 let response = {
                                     status: "FAILED",
@@ -346,9 +339,16 @@ module.exports = (() => {
                                 }
                                 return callback(response)
                             } else {
-                                record.documents.push(document)
-                                record.markModified('documents')
-                                record.save((error, record) => {
+                                // TODO: if record save fails, we should undo document save as well or find ways to retry.
+                                // TODO: IPFS integrations
+                                let document = new Document({
+                                    encryptedFile: formData.encryptedFile,
+                                    owner: identity._id,
+                                    encryptedKey: formData.encryptedKey,
+                                    dateCreated: new Date(),
+                                    record: record._id
+                                })
+                                document.save((error, document) => {
                                     if (error) {
                                         let response = {
                                             status: "FAILED",
@@ -356,71 +356,20 @@ module.exports = (() => {
                                         }
                                         return callback(response)
                                     } else {
-                                        let response = {
-                                            status: "SUCCESS",
-                                            message: "Successfully added the document.",
-                                            record: record
-                                        }
-                                        return callback(response)
-                                    }
-                                })
-                            }
-                        })
-                    }
-                })
-            } catch (error) {
-                let response = {
-                    status: 'FAILED',
-                    errors: error
-                }
-                return callback(response)
-            }
-        },
-        requestVerification: (formData, userapplication, callback) => {
-            try {
-                Document.findById(formData.document, (error, document) => {
-                    if (error) {
-                        let response = {
-                            status: 'FAILED',
-                            errors: error
-                        }
-                        return callback(response)
-                    } else {
-                        User.findUserByPublicKey(formData.receiverPublicKey, (error, receivingUser) => {
-                            if (error) {
-                                let response = {
-                                    status: 'FAILED',
-                                    errors: error
-                                }
-                                return callback(response)
-                            } else {
-                                let request = new Request({
-                                    type: 'verification',
-                                    document: document._id,
-                                    requestedBy: userapplication.user,
-                                    requestedTo: receivingUser,
-                                    sharedKey: formData.sharedKey
-                                })
-                                request.save((error, request) => {
-                                    if (error) {
-                                        let response = {
-                                            status: 'FAILED',
-                                            errors: error
-                                        }
-                                        return callback(response)
-                                    } else {
-                                        document.signed = request
-                                        document.save((error, document) => {
+                                        record.documents.push(document)
+                                        record.markModified('documents')
+                                        record.save((error, record) => {
                                             if (error) {
                                                 let response = {
-                                                    status: 'FAILED',
-                                                    errors: error
+                                                    status: "FAILED",
+                                                    error: error
                                                 }
                                                 return callback(response)
                                             } else {
                                                 let response = {
-                                                    status: 'SUCCESS',
-                                                    request: request
+                                                    status: "SUCCESS",
+                                                    message: "Successfully added the document.",
+                                                    record: record
                                                 }
                                                 return callback(response)
                                             }
@@ -439,14 +388,13 @@ module.exports = (() => {
                 return callback(response)
             }
         },
-        getAllRequests: (userapplication, callback) => {
+        requestVerification: (formData, user, callback) => {
+            /* 
+            / ? - 3 calls being made to match identity with user type (both receiving and requesting user)
+            / ? - Finish Identity model todo and update here. Extremely important.
+            */
             try {
-                let user = userapplication.user
-                Request.find({$or: [{requestedBy: user}, {requestedTo: user}]})
-                .populate({path: 'document', populate: [{path: 'signed'}, {path: 'record'}]})
-                .populate({path: 'requestedBy'})
-                .populate({path: 'requestedTo'})
-                .exec((error, requests) => {
+                Document.findById(formData.document, (error, document) => {
                     if (error) {
                         let response = {
                             status: 'FAILED',
@@ -454,12 +402,111 @@ module.exports = (() => {
                         }
                         return callback(response)
                     } else {
+                        User.findUserByPublicKey(formData.receiverPublicKey, (error, receivingUser) => {
+                            if (error) {
+                                let response = {
+                                    status: 'FAILED',
+                                    errors: error
+                                }
+                                return callback(response)
+                            } else {
+                                Identity.findByShieldUser(receivingUser, (error, receivingUserIdentity) => {
+                                    if (error) {
+                                        let response = {
+                                            status: 'FAILED',
+                                            errors: error
+                                        }
+                                        return callback(response)
+                                    } else {
+                                        Identity.findByShieldUser(user, (error, requestingUserIdentity) => {
+                                            if (error) {
+                                                let response = {
+                                                    status: 'FAILED',
+                                                    error: error
+                                                }
+                                                return callback(response)
+                                            } else {
+                                                let request = new Request({
+                                                    type: 'verification',
+                                                    document: document._id,
+                                                    requestedBy: requestingUserIdentity,
+                                                    requestedTo: receivingUserIdentity,
+                                                    sharedKey: formData.sharedKey
+                                                })
+                                                request.save((error, request) => {
+                                                    if (error) {
+                                                        let response = {
+                                                            status: 'FAILED',
+                                                            errors: error
+                                                        }
+                                                        return callback(response)
+                                                    } else {
+                                                        document.signed = request
+                                                        document.save((error, document) => {
+                                                            if (error) {
+                                                                let response = {
+                                                                    status: 'FAILED',
+                                                                    errors: error
+                                                                }
+                                                                return callback(response)
+                                                            } else {
+                                                                let response = {
+                                                                    status: 'SUCCESS',
+                                                                    request: request,
+                                                                    document: document
+                                                                }
+                                                                return callback(response)
+                                                            }
+                                                        })
+                                                    }
+                                                })
+                                            }
+                                        })
+                                    }
+                                })
+                            }
+                        })
+                    }
+                })
+            } catch (error) {
+                let response = {
+                    status: 'FAILED',
+                    errors: error
+                }
+                return callback(response)
+            }
+        },
+        getAllRequests: (user, callback) => {
+
+            try {
+                Identity.findByShieldUser(user, (error, identity) => {
+                    if (error) {
                         let response = {
-                            status: 'SUCCESS',
-                            requests: requests,
-                            user: user._id
+                            status: 'FAILED',
+                            error: error
                         }
                         return callback(response)
+                    } else {
+                        Request.find({$or: [{requestedBy: identity}, {requestedTo: identity}]})
+                        .populate({path: 'document', populate: [{path: 'signed'}, {path: 'record'}]})
+                        .populate({path: 'requestedBy', populate: { path: 'shieldUser'}})
+                        .populate({path: 'requestedTo', populate: { path: 'shieldUser'}})
+                        .exec((error, requests) => {
+                            if (error) {
+                                let response = {
+                                    status: 'FAILED',
+                                    errors: error
+                                }
+                                return callback(response)
+                            } else {
+                                let response = {
+                                    status: 'SUCCESS',
+                                    requests: requests,
+                                    user: identity._id
+                                }
+                                return callback(response)
+                            }
+                        })
                     }
                 })
             } catch (error) {

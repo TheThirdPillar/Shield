@@ -4,7 +4,7 @@ var Schema = mongoose.Schema
 
 var DocumentSchema = new Schema({
     encryptedFile: { type: String, required: true },
-    owner: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    owner: { type: Schema.Types.ObjectId, ref: 'Identity', required: true },
     record: { type: Schema.Types.ObjectId, ref: 'Record', required: true },
     signed: { type: Schema.Types.ObjectId, ref: 'Request' },
     encryptedKey: { type: String, required: true },

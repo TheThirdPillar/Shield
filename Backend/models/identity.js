@@ -19,4 +19,8 @@ IdentitySchema.statics.findByShieldUser = function findByShieldUser (user, callb
     return this.findOne({shieldUser: user._id}, callback)
 }
 
+// TODO: Search by PublicKey method which should 
+// return an identity after searching throudh 
+// shieldUser field, without hopefully populating.
+
 module.exports = mongoose.model('Identity', IdentitySchema)

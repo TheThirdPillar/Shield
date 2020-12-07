@@ -39,6 +39,7 @@ var myLocalConfig = (passport) => {
     ))
 
     passport.use('jwt', new CustomStrategy(
+        // TODO: Update to return relevant application user profile.
         (req, callback) => {
             const authHeader = req.headers['authorization']
             const token = authHeader && authHeader.split(' ')[1]
