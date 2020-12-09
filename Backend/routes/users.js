@@ -8,6 +8,7 @@ const uuid4 = require('uuid4')
 var User = require('../models/user')
 const VerificationCode = require('../models/verificationcode')
 var Application = require('../models/application')
+var Identity = require('../models/identity')
 
 /* Controllers */
 var userController = require('../controllers/userController')
@@ -72,5 +73,10 @@ router.post('/:id/login', [
   body('tokenSignature')
       .notEmpty()
 ], isVerifiedSignature, userController.loginUserWithApplication)
+
+router.get('/getidentityprofile', [
+  query('username')
+    .notEmpty() // TODO: Check if username is registered with Identity
+], userController.getPublicProfile)
 
 module.exports = router

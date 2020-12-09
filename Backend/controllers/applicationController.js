@@ -1,3 +1,4 @@
+// TODO: Check for response status
 const { validationResult } = require('express-validator')
 
 /* Application chaincodes */
@@ -65,7 +66,26 @@ exports.applicationGetter = (req, res) => {
                         return res.status(400).json(response)
                     }
                 })
+            } else if (req.params['functionName'] === 'getPubicProfile') {
+                let username = req.query['username']
+                identity.getPubicProfile(username, (response) => {
+                    if (response.status === 'SUCCESS') {
+                        return res.status(200).json(response)
+                    } else {
+                        return res.status(400).json(response)
+                    }
+                })
+            } else if (req.params['functionName'] === 'getDocuments') {
+                let user = req.user
+                identity.getAllDocuments(user, (response) => {
+                    if (response.status === 'SUCCESS') {
+                        return res.status(200).json(response)
+                    } else {
+                        return res.status(400).json(response)
+                    }
+                })
             } else {
+                console.log(req.params['functionName'])
                 return res.status(400).json({status: 'FAILED', message: 'Invalid function name'})
             }
         } else {
@@ -148,6 +168,14 @@ exports.applicationSetter = (req, res) => {
                         return res.status(400).json(response)
                     }
                 })
+            } else if (req.params['functionName'] === 'requestAccess') {
+                identity.requestDocumentAccess(formData, user, (response) => {
+                    if (response.status === 'SUCCESS') {
+                        return res.status(200).json(response)
+                    } else {
+                        return res.status(400).json(response)
+                    }
+                })
             } else {
                 return res.status(400).json({status: 'FAILED', message: 'Invalid function name'})
             }
@@ -173,6 +201,14 @@ exports.applicationPutter = (req, res) => {
         if (req.params['appId'] === 'identity') {
             if (req.params['functionName'] === 'handleVerification') {
                 identity.handleVerificationRequest(formData, user, (response)  => {
+                    if (response.status === 'SUCCESS') {
+                        return res.status(200).json(response)
+                    } else {
+                        return res.status(400).json(response)
+                    }
+                })
+            } else if (req.params['functionName'] === 'handleAccess') {
+                identity.handleRequestAccess(formData, (response) => {
                     if (response.status === 'SUCCESS') {
                         return res.status(200).json(response)
                     } else {

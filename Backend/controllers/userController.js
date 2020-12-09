@@ -11,6 +11,8 @@ const User = require('../models/user')
 const VerificationCode = require('../models/verificationcode')
 const Application = require('../models/application')
 const UserApplication = require('../models/userapplication')
+const Identity = require('../models/identity');
+const identity = require('../models/identity');
 
 // Function to register user
 exports.registerUser = (req, res) => {
@@ -186,5 +188,41 @@ exports.loginUserWithApplication = (req, res) => {
             message: 'Unkown server error, please try again'
         }
         return res.status(500).json(response)
+    }
+}
+
+exports.getPublicProfile = (req, res) => {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+        console.log(errors)
+        return res.status(400).json({ status: 'FAILED', errors: errors.array() })
+    }
+    try {
+        let username = req.query['username']
+        Identity.findByUsername(username)
+        .populate({path: 'educationRecords', populate: {path: 'documents', populate: {path: 'signed'}}})
+        .populate({path: 'professionalRecords', populate: {path: 'documents', populate: {path: 'signed'}}})
+        .populate({path: 'skillRecords'})
+        .exec((error, identity) => {
+            if (error) {
+                let response = {
+                    status: 'FAILED',
+                    errors: error
+                }
+                return res.status(500).json(response)
+            } else {
+                let response = {
+                    status: 'SUCCESS',
+                    user: identity
+                }
+                return res.status(200).json(response)
+            }
+        })
+    } catch (error) {
+        let response = {
+            status: 'FAILED',
+            errors: error
+        }
+        return res.status(400).json(response)
     }
 }

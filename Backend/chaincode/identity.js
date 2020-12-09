@@ -369,7 +369,8 @@ module.exports = (() => {
                                                 let response = {
                                                     status: "SUCCESS",
                                                     message: "Successfully added the document.",
-                                                    record: record
+                                                    record: record,
+                                                    document: document
                                                 }
                                                 return callback(response)
                                             }
@@ -586,7 +587,154 @@ module.exports = (() => {
                     status: 'FAILED',
                     errors: error
                 }
-                return callback(error)
+                return callback(response)
+            }
+        },
+        getPubicProfile: (username, callback) => {
+            try {
+                Identity.findByUsername(username)
+                .populate({path: 'educationRecords', populate: {path: 'documents', populate: {path: 'signed'}}})
+                .populate({path: 'professionalRecords', populate: {path: 'documents', populate: {path: 'signed'}}})
+                .populate({path: 'skillRecords'})
+                .exec((error, identity) => {
+                    if (error) {
+                        let response = {
+                            status: 'FAILED',
+                            error: error
+                        }
+                        return callback(response)
+                    } else {
+                        let response = {
+                            status: 'SUCCESS',
+                            user: identity
+                        }
+                        return callback(response)
+                    }
+                })
+            } catch (error) {
+                let response = {
+                    status: 'FAILED',
+                    errors: error
+                }
+                return callback(response)
+            }
+        },
+        requestDocumentAccess: (formData, user, callback) => {
+            Identity.findByShieldUser(user, (error, identity) => {
+                if (error) {
+                    let response = {
+                        status: 'FAILED',
+                        errors: error
+                    }
+                    return callback(response)
+                } else {
+                    Document.findById(formData.documentId, (error, document) => {
+                        if (error) {
+                            let response = {
+                                status: 'FAILED',
+                                errors: error
+                            }
+                            return callback(response)
+                        } else {
+                            let request = new Request({
+                                type: 'access',
+                                document: document._id,
+                                requestedBy: identity._id,
+                                requestedTo: document.owner
+                            })
+                            request.save((error, request) => {
+                                if (error) {
+                                    let response = {
+                                        status: 'FAILED',
+                                        errors: error
+                                    }
+                                    return callback(response)
+                                } else {
+                                    let response = {
+                                        status: 'SUCCESS',
+                                        request: request
+                                    }
+                                    return callback(response)
+                                }
+                            })
+                        }
+                    })
+                }
+            })
+        },
+        handleRequestAccess: (formData, callback) => {
+            try {
+                Request.findById(formData.requestId, (error, request) => {
+                    if (error) {
+                        let response = {
+                            status: 'FAILED',
+                            errors: error
+                        }
+                        return callback(response)
+                    } else {
+                        request.dateOfAction = Date.now()
+                        request.status = formData.status
+                        if (formData.status == 'accepted') {
+                            request.sharedKey = formData.sharedKey
+                        }
+                        request.save((error, request) => {
+                            if (error) {
+                                let response = {
+                                    status: 'FAILED',
+                                    errors: error
+                                }
+                                return callback(response)
+                            } else {
+                                let response = {
+                                    status: 'FAILED',
+                                    request: request
+                                }
+                                return callback(response)
+                            }
+                        })
+                    }
+                })
+            } catch (error) {
+                let response = {
+                    status: 'FAILED',
+                    errors: error
+                }
+                return callback(response)
+            }
+        },
+        getAllDocuments: (user, callback) => {
+            try {
+                Identity.findByShieldUser(user, (error, identity) => {
+                    if (error) {
+                        let response = {
+                            status: 'FAILED',
+                            errors: error
+                        }
+                        return callback(response)
+                    } else {
+                        Document.find({owner: identity}, (error, documents) => {
+                            if (error) {
+                                let response = {
+                                    status: 'FAILED',
+                                    errors: error
+                                }
+                                return callback(response)
+                            } else {
+                                let response = {
+                                    status: 'SUCCESS',
+                                    documents: documents
+                                }
+                                return callback(response)
+                            }
+                        })
+                    }
+                })
+            } catch (error) {
+                let response = {
+                    status: 'FAILED',
+                    errors: error
+                }
+                return callback(response)
             }
         }
     }

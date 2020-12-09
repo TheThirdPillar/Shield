@@ -1,5 +1,4 @@
 var mongoose = require('mongoose')
-const { modelName } = require('./application')
 var Schema = mongoose.Schema
 
 // TODO: Only one verification requests per document.
