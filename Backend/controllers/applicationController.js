@@ -223,6 +223,36 @@ exports.applicationPutter = (req, res) => {
         }
     } catch (error) {
         console.error(error)
-        return res.status(500).json({status: 'FAILED', error: error})
+        return res.status(500).json({status: 'FAILED', errors: error})
+    }
+}
+
+exports.applicationDeleter = (req, res) => {
+
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+        return res.status(400).json({status: 'FAILED', errors: errors.array()})
+    }
+
+    try {
+        let user = req.user
+        let formData = req.body
+        if (req.params['appId'] === 'identity') {
+            if (req.params['functionName'] === 'deleteItem') {
+                identity.deleteItem(formData, (response) => {
+                    if (response.status === 'SUCCESS') {
+                        return res.status(200).json(response)
+                    } else {
+                        return res.status(400).json(response)
+                    }
+                })
+            } else {
+                return res.status(400).json({status: 'FAILED', message: 'Invalid function name'})
+            }
+        } else {
+            return res.status(400).json({status: 'FAILED', message: 'Invalid application id'})
+        }
+    } catch (error) {
+        return res.status(400).json({status: 'FAILED', errors: error})
     }
 }

@@ -736,6 +736,28 @@ module.exports = (() => {
                 }
                 return callback(response)
             }
+        },
+        deleteItem: (formData, callback) => {
+            // We need to send the objectId, and the kind of object
+            // It could be a skill, record, or document object
+            // TODO: Finish delete, we are leaving it pending,
+            // deleting objects directly does not work, we have 
+            // to remove their preferences too.
+            try {
+                let object = formData.object
+                let objectId = formData.objectId
+                let response = {
+                    status: "SUCCESS",
+                    message: 'Successfully deleted the item.'
+                }
+                return callback(response)
+            } catch (error) {
+                let response = {
+                    status: 'FAILED',
+                    errors: error
+                }
+                return callback(response)
+            }
         }
     }
 })() 

@@ -71,4 +71,12 @@ router.put('/listen/:appId/:functionName', [
         .notEmpty() // TODO: Function should be registered with the above returned application - Scope ?
 ], isAuthenticated, applicationController.applicationPutter)
 
+// Delete request
+router.delete('/listen/:appId/:functionName', [
+    param('appId')
+        .notEmpty(),
+    param('functionName')
+        .notEmpty(),
+], isAuthenticated, applicationController.applicationDeleter)
+
 module.exports = router
