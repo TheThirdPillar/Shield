@@ -3,6 +3,7 @@ const { validationResult } = require('express-validator')
 
 /* Application chaincodes */
 const identity = require('../chaincode/identity')
+const gigs = require('../chaincode/gigs')
 
 /* Data models */
 var Application = require('../models/application')
@@ -88,6 +89,19 @@ exports.applicationGetter = (req, res) => {
                 console.log(req.params['functionName'])
                 return res.status(400).json({status: 'FAILED', message: 'Invalid function name'})
             }
+        } else if (req.params['appId'] === 'gigs') {
+            if (req.params['functionName'] === 'getCommunitiesByAdmin') {
+                let user = req.user
+                gigs.getCommunitiesByAdmin(user, (response) => {
+                    if (response.status === 'SUCCESS') {
+                        return res.status(200).json(response)
+                    } else {
+                        return res.status(400).json(response)
+                    }
+                })
+            } else {
+                return res.status(400).json({status: 'FAILED', message: 'Invalid function name'})
+            } 
         } else {
             return res.status(400).json({status: 'FAILED', message: 'Invalid application id'})
         }
@@ -170,6 +184,18 @@ exports.applicationSetter = (req, res) => {
                 })
             } else if (req.params['functionName'] === 'requestAccess') {
                 identity.requestDocumentAccess(formData, user, (response) => {
+                    if (response.status === 'SUCCESS') {
+                        return res.status(200).json(response)
+                    } else {
+                        return res.status(400).json(response)
+                    }
+                })
+            } else {
+                return res.status(400).json({status: 'FAILED', message: 'Invalid function name'})
+            }
+        } else if (req.params['appId'] === 'gigs') {
+            if (req.params['functionName'] === 'addGig') {
+                gigs.addGig(formData, user, (response) => {
                     if (response.status === 'SUCCESS') {
                         return res.status(200).json(response)
                     } else {
