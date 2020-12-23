@@ -7,7 +7,7 @@ var GigSchema = new Schema({
     gigCategory: {type: String, required: true}, // TODO: Update to a schema
     gigStartDate: {type: Date, required: true},
     gigEndDate: {type: Date, required: true},
-    gigCommunity: {type: Schema.Types.ObjectId, required: true},
+    gigCommunity: {type: Schema.Types.ObjectId, ref: 'Community', required: true},
     gigSkills: [{type: String, required: true}], // TODO: Update to a schema
     postedBy: {type: Schema.Types.ObjectId, ref: 'User', required: true},
     postedOn: {type: Date, default: Date.now() },

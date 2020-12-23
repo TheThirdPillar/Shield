@@ -46,10 +46,8 @@ var myLocalConfig = (passport) => {
             if (token == null) {
                 return callback(null, null)
             }  
-            console.log(token)
             jwt.verify(token, tokenSecret.secret, (err, user) => {
                 if (err) {
-                    console.error('unable to verify');
                     return callback(err, null)
                 }
                 // TODO: Seems unnecessary, maybe store applicationData

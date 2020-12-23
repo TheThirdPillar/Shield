@@ -33,7 +33,7 @@ exports.registerApplication = (req, res) => {
 }
 
 exports.applicationGetter = (req, res) => {
-    // TODO: If we automate this, we are golden
+    // TODO: Automate
 
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
@@ -90,9 +90,9 @@ exports.applicationGetter = (req, res) => {
                 return res.status(400).json({status: 'FAILED', message: 'Invalid function name'})
             }
         } else if (req.params['appId'] === 'gigs') {
-            if (req.params['functionName'] === 'getCommunitiesByAdmin') {
+            if (req.params['functionName'] === 'getAdminData') {
                 let user = req.user
-                gigs.getCommunitiesByAdmin(user, (response) => {
+                gigs.getAdminData(user, (response) => {
                     if (response.status === 'SUCCESS') {
                         return res.status(200).json(response)
                     } else {
@@ -116,7 +116,6 @@ exports.applicationSetter = (req, res) => {
     // TODO: Automated discovery
 
     const errors = validationResult(req)
-    console.log(errors)
     if (!errors.isEmpty()) {
         return res.status(400).json({status: 'FAILED', errors: errors.array()})
     }
