@@ -99,6 +99,15 @@ exports.applicationGetter = (req, res) => {
                         return res.status(400).json(response)
                     }
                 })
+            } else if (req.params['functionName'] === 'getGigsData') {
+                let user = req.user
+                gigs.getGigsData(user, (response) => {
+                    if (response.status === 'SUCCESS') {
+                        return res.status(200).json(response)
+                    } else {
+                        return res.status(400).json(response)
+                    }
+                })
             } else {
                 return res.status(400).json({status: 'FAILED', message: 'Invalid function name'})
             } 
@@ -201,6 +210,14 @@ exports.applicationSetter = (req, res) => {
                         return res.status(400).json(response)
                     }
                 })
+            } else if (req.params['functionName'] === 'bookmarkGig') {
+                gigs.bookmarkGig(formData, user, (response) => {
+                    if (response.status === 'SUCCESS') {
+                        return res.status(200).json(response)
+                    } else {
+                        return res.status(400).json(response)
+                    }
+                })
             } else {
                 return res.status(400).json({status: 'FAILED', message: 'Invalid function name'})
             }
@@ -261,10 +278,22 @@ exports.applicationDeleter = (req, res) => {
 
     try {
         let user = req.user
-        let formData = req.body
+        let object = req.params['object']
         if (req.params['appId'] === 'identity') {
             if (req.params['functionName'] === 'deleteItem') {
                 identity.deleteItem(formData, (response) => {
+                    if (response.status === 'SUCCESS') {
+                        return res.status(200).json(response)
+                    } else {
+                        return res.status(400).json(response)
+                    }
+                })
+            } else {
+                return res.status(400).json({status: 'FAILED', message: 'Invalid function name'})
+            }
+        } else if (req.params['appId'] === 'gigs') {
+            if (req.params['functionName'] === 'removeBookmark') {
+                gigs.removeBookmark(object, user, (response) => {
                     if (response.status === 'SUCCESS') {
                         return res.status(200).json(response)
                     } else {

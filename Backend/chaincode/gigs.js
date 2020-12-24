@@ -1,5 +1,6 @@
 var Community = require('../models/community')
 var Gig = require('../models/gig')
+var UserGigModel = require('../models/usergigmodel')
 
 module.exports = (() => {
     return {
@@ -67,6 +68,101 @@ module.exports = (() => {
                         return callback(response)
                     }
                 })
+            })
+        },
+        getGigsData: (user, callback) => {
+            // Currently we are returning all gigs and
+            // all user-gigs associations.
+            // TODO: All gigs pagination
+            Gig.find({})
+            .populate({path: 'gigCommunity'})
+            .populate({path: 'postedBy'})
+            .exec((error, gigs) => {
+                if (error) {
+                    let response = {
+                        status: 'FAILED',
+                        errors: error
+                    }
+                    return callback(response)
+                } else {
+                    UserGigModel.find({user: user}, (error, usergigmodel) => {
+                        if (error) {
+                            let response = {
+                                status: 'FAILED',
+                                errors: error
+                            }
+                            return callback(response)
+                        } else {
+                            let response = {
+                                status: 'SUCCESS',
+                                allGigs: gigs,
+                                usergigmodels: usergigmodel
+                            }
+                            return callback(response)
+                        }
+                    })
+                }
+            })
+        },
+        bookmarkGig: (formData, user, callback) => {
+            // TODO:  Search if a bookmark object already exists.
+            Gig.findById(formData.gig, (error, gig) => {
+                if (error) {
+                    let response = {
+                        status: 'FAILED',
+                        errors: error
+                    }
+                    return callback(response)
+                } else {
+                    let usergigmodel = new UserGigModel({
+                        user: user._id,
+                        gig:  gig._id
+                    })
+                    usergigmodel.save((error, saved) => {
+                        if (error) {
+                            let response = {
+                                status: 'FAILED',
+                                errors: error
+                            }
+                            return callback(response)
+                        } else {
+                            let response = {
+                                status: 'SUCCESS',
+                                bookmark: saved._id
+                            }
+                            return callback(response)
+                        }
+                    })
+                }
+            })
+        },
+        removeBookmark: (bookmarkId, user, callback) => {
+            UserGigModel.findById(bookmarkId, (error, usergigmodel) => {
+                if (error) {
+                    let response = {
+                        status: 'FAILED',
+                        errors: error
+                    }
+                    return callback(response)
+                } else {
+                    // TODO: Check if request is coming from same user
+                    console.log(user)
+                    UserGigModel.deleteOne({_id: usergigmodel._id}, (error) => {
+                        if (error) {
+                            let response = {
+                                status: 'FAILED',
+                                errors: error
+                            }
+                            return callback(response)
+                        } else {
+                            let response = {
+                                status: 'SUCCESS',
+                                message: 'Successfully removed the bookmark'
+                            }
+                            return callback(response)
+                        }
+                    })
+                }
             })
         } 
     }

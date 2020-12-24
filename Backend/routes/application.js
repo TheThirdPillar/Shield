@@ -72,7 +72,7 @@ router.put('/listen/:appId/:functionName', [
 ], isAuthenticated, applicationController.applicationPutter)
 
 // Delete request
-router.delete('/listen/:appId/:functionName', [
+router.delete('/listen/:appId/:functionName/:object', [
     param('appId')
         .notEmpty(),
     param('functionName')
