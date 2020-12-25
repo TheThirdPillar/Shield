@@ -218,6 +218,14 @@ exports.applicationSetter = (req, res) => {
                         return res.status(400).json(response)
                     }
                 })
+            } else if (req.params['functionName'] === 'gigApplication') {
+                gigs.gigApplication(formData, user, (response) => {
+                    if (response.status === 'SUCCESS') {
+                        return res.status(200).json(response)
+                    } else {
+                        return res.status(400).json(response)
+                    }
+                })
             } else {
                 return res.status(400).json({status: 'FAILED', message: 'Invalid function name'})
             }
@@ -251,6 +259,18 @@ exports.applicationPutter = (req, res) => {
                 })
             } else if (req.params['functionName'] === 'handleAccess') {
                 identity.handleRequestAccess(formData, (response) => {
+                    if (response.status === 'SUCCESS') {
+                        return res.status(200).json(response)
+                    } else {
+                        return res.status(400).json(response)
+                    }
+                })
+            } else {
+                return res.status(400).json({status: 'FAILED', message: 'Invalid function name'})
+            }
+        } else if (req.params['appId'] === 'gigs') {
+            if (req.params['functionName'] === 'handleApplication') {
+                gigs.handleApplication(formData, (response) => {
                     if (response.status === 'SUCCESS') {
                         return res.status(200).json(response)
                     } else {

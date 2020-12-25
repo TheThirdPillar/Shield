@@ -13,7 +13,9 @@ var GigSchema = new Schema({
     postedOn: {type: Date, default: Date.now() },
     gigType: {type: Number, required: true, }, // TODO: For now, 0 and 1 -> 0 is endorsement and 1 is paid work and endorsement
     submissions: [{type: Schema.Types.ObjectId, ref: 'Submission'}],
-    reward: {type: Number, min: [0, 'Reward cannot be less than 0.'], required: true}  
+    reward: {type: Number, min: [0, 'Reward cannot be less than 0.'], required: true},
+    encryptedFile: {type: String, required: true},
+    encryptedKey: {type: String, required: true}  
 })
 
 module.exports = mongoose.model('Gig', GigSchema)

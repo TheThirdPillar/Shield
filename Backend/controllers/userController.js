@@ -154,7 +154,7 @@ exports.loginUserWithApplication = (req, res) => {
                             user: user.publicKey,
                             application: application.appId
                         }
-                        let token = jwt.sign(tokenData, tokenSecret.secret, { expiresIn: '1h' })
+                        let token = jwt.sign(tokenData, tokenSecret.secret, { expiresIn: '12h' })
                         // TODO: Applications may have conditions based on other applications
                         if (!userapplication) {
                             let newUserApplication = new UserApplication({
