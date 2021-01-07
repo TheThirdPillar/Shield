@@ -5,7 +5,8 @@ var UserSkillData = new Schema({
     data: {
         type: Object,
         required: true
-    }
+    },
+    endorsements: [{type: Schema.Types.ObjectId, ref: 'Endorsement'}]
 })
 
 module.exports = mongoose.model('UserSkillData', UserSkillData)

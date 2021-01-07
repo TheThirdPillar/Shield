@@ -85,6 +85,15 @@ exports.applicationGetter = (req, res) => {
                         return res.status(400).json(response)
                     }
                 })
+            } else if (req.params['functionName'] === 'getUserSkillData') {
+                let user = req.user
+                identity.getUserSkillData(user, (response) => {
+                    if (response.status === 'SUCCESS') {
+                        return res.status(200).json(response)
+                    } else {
+                        return res.status(400).json(response)
+                    }
+                })
             } else {
                 console.log(req.params['functionName'])
                 return res.status(400).json({status: 'FAILED', message: 'Invalid function name'})
@@ -226,6 +235,14 @@ exports.applicationSetter = (req, res) => {
                         return res.status(400).json(response)
                     }
                 })
+            } else if (req.params['functionName'] === 'gigSubmission') {
+                gigs.gigSubmission(formData, user, (response) => {
+                    if (response.status === 'SUCCESS') {
+                        return res.status(200).json(response)
+                    } else {
+                        return res.status(400).json(response)
+                    }
+                })
             } else {
                 return res.status(400).json({status: 'FAILED', message: 'Invalid function name'})
             }
@@ -271,6 +288,14 @@ exports.applicationPutter = (req, res) => {
         } else if (req.params['appId'] === 'gigs') {
             if (req.params['functionName'] === 'handleApplication') {
                 gigs.handleApplication(formData, (response) => {
+                    if (response.status === 'SUCCESS') {
+                        return res.status(200).json(response)
+                    } else {
+                        return res.status(400).json(response)
+                    }
+                })
+            } else if (req.params['functionName'] === "handleSubmission") {
+                gigs.handleSubmission(formData, user, (response) => {
                     if (response.status === 'SUCCESS') {
                         return res.status(200).json(response)
                     } else {

@@ -1,9 +1,14 @@
 var Community = require('../models/community')
 var Gig = require('../models/gig')
 var UserGigModel = require('../models/usergigmodel')
+var Submission = require('../models/submission')
+var Endorsement = require('../models/endorsement')
+var UserSkillData = require('../models/userskilldata')
 
 // TODO: Some actions need to verify the 'USER' in model
 // is the one making the request.
+
+// TODO: Try and catch error handling.
 
 module.exports = (() => {
     return {
@@ -58,6 +63,7 @@ module.exports = (() => {
                 Gig.find({postedBy: user._id})
                 .populate({path: 'gigCommunity'})
                 .populate({path: 'postedBy'})
+                .populate({path: 'submissions', ref: 'Submissions', populate: {path: 'submittedBy', ref: 'User'}})
                 .exec((error, gigs) => {
                     if (error) {
                         let response = {
@@ -108,7 +114,9 @@ module.exports = (() => {
                     }
                     return callback(response)
                 } else {
-                    UserGigModel.find({user: user}, (error, usergigmodel) => {
+                    UserGigModel.find({user: user})
+                    .populate({path: 'submission'})
+                    .exec((error, usergigmodel) => {
                         if (error) {
                             let response = {
                                 status: 'FAILED',
@@ -276,6 +284,156 @@ module.exports = (() => {
                                 application: saved._id
                             }
                             return callback(response)
+                        }
+                    })
+                }
+            })
+        },
+        gigSubmission: (formData, user, callback) => {
+            // TODO: This function seems mighty fucked up. Fix please.
+            // TODO: Check for date range, duplicate submissions etc.
+            Gig.findById(formData.gigId, (error, gig) => {
+                if (error) {
+                    let response = {
+                        status: 'FAILED',
+                        errors: error
+                    }
+                    return callback(response)
+                } else {
+                    let submission = new Submission({
+                        submissionFile: formData.encryptedSolution,
+                        submissionKeyUser: formData.encryptedSolutionKeyUser,
+                        submissionKeyAdmin: formData.encryptedSolutionKeyAdmin,
+                        skillToEndorse: formData.userskilldata,
+                        gig: formData.gigId,
+                        submittedBy: user._id
+                    })
+                    submission.save((error, submission) => {
+                        if (error) {
+                            let response = {
+                                status: 'FAILED',
+                                errors: error
+                            }
+                            return callback(response)
+                        } else {
+                            UserGigModel.findOne({user: user._id, gig: gig._id}, (error, usergigobject) => {
+                                if (error) {
+                                    let response = {
+                                        status: 'FAILED',
+                                        errors: error
+                                    } 
+                                    return callback(response)
+                                } else {
+                                    usergigobject.submission = submission._id
+                                    usergigobject.status = 4
+                                    usergigobject.save((error, updateddocument) => {
+                                        if (error) {
+                                            let response = {
+                                                status: 'FAILED',
+                                                errors: error
+                                            }
+                                            return callback(response)
+                                        } else {
+                                            gig.submissions.push(updateddocument.submission)
+                                            gig.save((error, saved) => {
+                                                if (error) {
+                                                    let response = {
+                                                        status: 'FAILED',
+                                                        errors: error
+                                                    }
+                                                    return callback(response)
+                                                } else {
+                                                    let response = {
+                                                        status: 'SUCCESS',
+                                                        gig: saved._id, 
+                                                        submission: submission._id
+                                                    }
+                                                    return callback(response)
+                                                }
+                                            })
+                                        }
+                                    })
+                                }
+                            })
+                        }
+                    })
+                }
+            })
+        },
+        handleSubmission: (formData, user, callback) => {
+            // TODO: Boundary condtions, user, gig, submission validation etc.
+            Submission.findById(formData.submissionId, (error, submission) => {
+                if (error) {
+                    let response = {
+                        status: "FAILED",
+                        errors: error
+                    }
+                    return callback(response)
+                } else {
+                    submission.status = (formData.status === "0") ? "2" : "1"
+                    submission.dateAction = Date.now()
+                    submission.save((error, submission) => {
+                        if (error) {
+                            let response = {
+                                status: 'FAILED',
+                                errors: error
+                            }
+                            return callback(response)
+                        } else {
+                            // Submission is saved, if accepted create endorsement, else 
+                            // do nothing.
+                            if (submission.status === "1") {
+                                // create endorsement
+                                let endorsement = new Endorsement({
+                                    endorsedBy: user._id,
+                                    gigId: submission.gig
+                                })
+                                endorsement.save((error, endorsement) => {
+                                    if (error) {
+                                        let response = {
+                                            status: "FAILED",
+                                            errors: error
+                                        }
+                                        return callback(response)
+                                    } else {
+                                        UserSkillData.findById(submission.skillToEndorse, (error, userskilldata) => {
+                                            if (error) {
+                                                let response = {
+                                                    status: 'FAILED',
+                                                    errors: error
+                                                }
+                                                return callback(response)
+                                            } else {
+                                                // TODO: Only second update is needed.
+                                                userskilldata.data.endorsements.push(endorsement)
+                                                userskilldata.endorsements.push(endorsement)
+                                                userskilldata.save((error, saved) => {
+                                                    if (error) {
+                                                        let response = {
+                                                            status: 'FAILED',
+                                                            errors: error
+                                                        }
+                                                        return callback(response)
+                                                    } else {
+                                                        let response = {
+                                                            status: "SUCCESS",
+                                                            message: "Submission accepted and user skill endorsed.",
+                                                            userskill: saved
+                                                        }
+                                                        return callback(response)
+                                                    }
+                                                })
+                                            }
+                                        })
+                                    }
+                                })
+                            } else {
+                                let response = {
+                                    status: "SUCCESS",
+                                    message: "Submission rejected successfully."
+                                }
+                                return callback(response)
+                            }
                         }
                     })
                 }

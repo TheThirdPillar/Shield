@@ -758,6 +758,33 @@ module.exports = (() => {
                 }
                 return callback(response)
             }
+        },
+        getUserSkillData: (user, callback) => {
+            try {
+                Identity.findByShieldUser(user)
+                .populate({path: 'skillRecords'})
+                .exec((error, identity) => {
+                    if (error) {
+                        let response = {
+                            status: 'FAILED',
+                            errors: error
+                        }
+                        return callback(response)
+                    } else {
+                        let response = {
+                            status: 'SUCCESS',
+                            skills: identity.skillRecords
+                        }
+                        return callback(response)
+                    }
+                })
+            } catch (error) {
+                let response = {
+                    status: 'FAILED',
+                    errors: error
+                }
+                return callback(response)
+            }
         }
     }
 })() 

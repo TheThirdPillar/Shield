@@ -21,7 +21,7 @@ function generateId (len) {
     return Array.from(arr, dec2hex).join('');
 }
 
-function encryptData(data) {
+function encryptData(data, theirPublicKey) {
     return new Promise((resolve, reject) => {
         try {
             chrome.storage.local.get(["shieldAccount"], (result) => {
@@ -42,6 +42,11 @@ function encryptData(data) {
                         let reply = {}
                         reply.encryptedFile = encryptedFile
                         reply.encryptedKey = encryptedKey.data + "::" + encryptedKey.nonce
+                        // If `theirPublicKey` is set, encrypt key for them as well
+                        if (theirPublicKey) {
+                            let theirEncryptedKey = encryptPublic(aesKey, theirPublicKey, decryptedPrivateKey)
+                            reply.theirEncryptedKey = theirEncryptedKey.data + "::" + theirEncryptedKey.nonce
+                        }
                         reply.status = 'SUCCESS'
                         return resolve(reply) 
                     })
@@ -301,7 +306,9 @@ chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => 
 
     if (request.query === 'encrypt') {
         changeIcon()
-        encryptData(request.data)
+        let theirPublicKey
+        (request.theirPublicKey) ? theirPublicKey = request.theirPublicKey : null
+        encryptData(request.data, theirPublicKey)
         .then((result) => {
             defaultIcon()
             if (result && result.status && result.status === 'SUCCESS')  {
