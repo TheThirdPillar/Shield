@@ -4,7 +4,7 @@ var Schema = mongoose.Schema
 var GigSchema = new Schema({
     gigTitle: {type: String, required: true},
     gigDescription: {type: String, required: true},
-    gigCategory: {type: String, required: true}, // TODO: Update to a schema
+    submissionCount: {type: Number, required: true}, // TODO: Update to a schema
     gigStartDate: {type: Date, required: true},
     gigEndDate: {type: Date, required: true},
     gigCommunity: {type: Schema.Types.ObjectId, ref: 'Community', required: true},

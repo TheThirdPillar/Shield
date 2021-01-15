@@ -24,7 +24,7 @@ module.exports = (() => {
                     let gig = new Gig({
                         gigTitle: formData.title,
                         gigDescription: formData.description,
-                        gigCategory: formData.category,
+                        submissionCount: Number(formData.submissionCount),
                         gigStartDate: new Date(formData.gigStartDate),
                         gigEndDate: new Date(formData.gigEndDate),
                         gigCommunity: community._id,
