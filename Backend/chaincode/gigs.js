@@ -25,6 +25,7 @@ module.exports = (() => {
                         gigTitle: formData.title,
                         gigDescription: formData.description,
                         submissionCount: Number(formData.submissionCount),
+                        externalLinks: formData.externalLinks,
                         gigStartDate: new Date(formData.gigStartDate),
                         gigEndDate: new Date(formData.gigEndDate),
                         gigCommunity: community._id,
@@ -32,6 +33,7 @@ module.exports = (() => {
                         postedBy: user._id,
                         gigType: formData.type,
                         reward: formData.reward,
+                        virtues: formData.virtues,
                         encryptedFile: formData.encryptedFile,
                         encryptedKey: formData.encryptedKey
                     })
@@ -292,6 +294,7 @@ module.exports = (() => {
         gigSubmission: (formData, user, callback) => {
             // TODO: This function seems mighty fucked up. Fix please.
             // TODO: Check for date range, duplicate submissions etc.
+            // TODO: Only gig.submissionCount number of gigs should be allowed.
             Gig.findById(formData.gigId, (error, gig) => {
                 if (error) {
                     let response = {

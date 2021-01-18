@@ -2,7 +2,7 @@
     "manifest_version": 2,
     "name": "Shield by ThirdPillar",
     "short_name": "Shield",
-    "description": "Creates and stores key pairs which in turn can be used to sign, encrypt/decrypt records or share encrypted aes keys and stores session data for SCN applications.",
+    "description": "Still in a nascent stage, Shield hopes to become the identity layer of the Web 3.0, with privacy as the core foundation.",
     "version": "0.0.0.1",
     "author": "Gaurav Singh @ ThirdPillar",
     "icons": {
@@ -51,7 +51,7 @@
     "externally_connectable": {
         "matches": [
             "*://identity.skillschain.org/*",
-            "*://app.skillschain.test/*",
+            "*://gigs.skillschain.org/*",
             "*://localhost/*"
         ],
         "accepts_tls_channel_id": false
