@@ -304,12 +304,13 @@ module.exports = (() => {
                     return callback(response)
                 } else {
                     let submission = new Submission({
-                        submissionFile: formData.encryptedSolution,
-                        submissionKeyUser: formData.encryptedSolutionKeyUser,
-                        submissionKeyAdmin: formData.encryptedSolutionKeyAdmin,
                         skillToEndorse: formData.userskilldata,
                         gig: formData.gigId,
-                        submittedBy: user._id
+                        submittedBy: user._id,
+                        externalURLs: (formData.externalLinks) ? formData.externalLinks : [],
+                        submissionFile: (formData.encryptedSolution) ? formData.encryptedSolution : null,
+                        submissionKeyUser: (formData.encryptedSolutionKeyUser) ? formData.encryptedSolutionKeyUser : null,
+                        submissionKeyAdmin: (formData.encryptedSolutionKeyAdmin) ? formData.encryptedSolutionKeyAdmin : null
                     })
                     submission.save((error, submission) => {
                         if (error) {
