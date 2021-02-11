@@ -328,35 +328,72 @@ module.exports = (() => {
                                     } 
                                     return callback(response)
                                 } else {
-                                    usergigobject.submission = submission._id
-                                    usergigobject.status = 4
-                                    usergigobject.save((error, updateddocument) => {
-                                        if (error) {
-                                            let response = {
-                                                status: 'FAILED',
-                                                errors: error
-                                            }
-                                            return callback(response)
-                                        } else {
-                                            gig.submissions.push(updateddocument.submission)
-                                            gig.save((error, saved) => {
-                                                if (error) {
-                                                    let response = {
-                                                        status: 'FAILED',
-                                                        errors: error
-                                                    }
-                                                    return callback(response)
-                                                } else {
-                                                    let response = {
-                                                        status: 'SUCCESS',
-                                                        gig: saved._id, 
-                                                        submission: submission._id
-                                                    }
-                                                    return callback(response)
+                                    // If no userGig object, create one.
+                                    if (!usergigobject) {
+                                        let usergig = new UserGigModel({
+                                            user: user._id,
+                                            gig: formData.gigId,
+                                            status: 4,
+                                            submission: submission._id
+                                        })
+                                        usergig.save((error, saved) => {
+                                            if (error) {
+                                                let response = {
+                                                    status: 'FAILED',
+                                                    errors: error
                                                 }
-                                            })
-                                        }
-                                    })
+                                                return callback(response)
+                                            } else {
+                                                gig.submissions.push(saved.submission)
+                                                gig.save((error, saved) => {
+                                                    if (error) {
+                                                        let response = {
+                                                            status: 'FAILED',
+                                                            errors: error
+                                                        }
+                                                        return callback(response)
+                                                    } else {
+                                                        let response = {
+                                                            status: 'SUCCESS',
+                                                            gig: saved._id, 
+                                                            submission: submission._id
+                                                        }
+                                                        return callback(response)
+                                                    }
+                                                })
+                                            }
+                                        })
+                                    } else {
+                                        usergigobject.submission = submission._id
+                                        usergigobject.status = 4
+                                        usergigobject.save((error, updateddocument) => {
+                                            if (error) {
+                                                let response = {
+                                                    status: 'FAILED',
+                                                    errors: error
+                                                }
+                                                return callback(response)
+                                            } else {
+                                                gig.submissions.push(updateddocument.submission)
+                                                gig.save((error, saved) => {
+                                                    if (error) {
+                                                        let response = {
+                                                            status: 'FAILED',
+                                                            errors: error
+                                                        }
+                                                        return callback(response)
+                                                    } else {
+                                                        let response = {
+                                                            status: 'SUCCESS',
+                                                            gig: saved._id, 
+                                                            submission: submission._id
+                                                        }
+                                                        return callback(response)
+                                                    }
+                                                })
+                                            }
+                                        })
+                                    }
                                 }
                             })
                         }
@@ -390,7 +427,9 @@ module.exports = (() => {
                                 // create endorsement
                                 let endorsement = new Endorsement({
                                     endorsedBy: user._id,
-                                    gigId: submission.gig
+                                    gigId: submission.gig,
+                                    endorsementXP: formData.endorsementXP,
+                                    endorsedVirtues: formData.endorsedVirtues
                                 })
                                 endorsement.save((error, endorsement) => {
                                     if (error) {

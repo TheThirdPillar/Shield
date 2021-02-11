@@ -785,6 +785,43 @@ module.exports = (() => {
                 }
                 return callback(response)
             }
+        },
+        handleVirtues: (formData, user, callback) => {
+            try {
+                Identity.findByShieldUser(user, (error, identity) => {
+                    if (error) {
+                        let response = {
+                            status: "FAILED",
+                            errors: error
+                        }
+                        return callback(response)
+                    } else {
+                        identity.virtues = formData.virtues
+                        identity.save((error, saved) => {
+                            if (error) {
+                                let response = {
+                                    status: "FAILED",
+                                    errors: error
+                                }
+                                return callback(response)
+                            } else {
+                                let response = {
+                                    status: "SUCCESS",
+                                    message: "Successfully updated virtues.",
+                                    identity: saved
+                                }
+                                return callback(response)
+                            }
+                        })
+                    }
+                })
+            } catch (error) {
+                let response = {
+                    status: "FAILED",
+                    errors: error
+                }
+                return callback(response)
+            }
         }
     }
 })() 
