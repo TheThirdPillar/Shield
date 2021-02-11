@@ -17,7 +17,13 @@ var applicationRouter = require('./routes/application')
 var communityRouter = require('./routes/commnuity')
 var skillRouter = require('./routes/skill')
 
-var app = express();
+var app = express()
+
+// Process root folder
+process.env.PWD = process.cwd()
+
+// Statuc folders setup
+app.use('/uploads', express.static(path.join(process.env.PWD, './uploads')))
 
 // Mongo Setup
 var mongoUrl = require('./config/mongo')

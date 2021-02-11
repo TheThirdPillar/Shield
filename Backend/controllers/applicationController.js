@@ -8,6 +8,19 @@ const gigs = require('../chaincode/gigs')
 /* Data models */
 var Application = require('../models/application')
 
+// TODO: Move this inside the chaincode
+exports.profileUpload = (req, res) => {
+    let user = req.user
+    let file = req.file
+    identity.uploadPhoto(file, user, (response) => {
+        if (response.status === 'SUCCESS') {
+            return res.status(200).json(response)
+        } else {
+            return res.status(400).json(response)
+        }
+    })
+}
+
 exports.registerApplication = (req, res) => {
     
     const errors = validationResult(req)

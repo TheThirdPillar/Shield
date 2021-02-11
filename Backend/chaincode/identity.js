@@ -82,6 +82,42 @@ module.exports = (() => {
                 callback(response)
             }
         },
+        uploadPhoto: (file, user, callback) => {
+            try {
+                Identity.findByShieldUser(user, (error, identity) => {
+                    if (error) {
+                        let response = {
+                            status: "FAILED",
+                            errors: error
+                        }
+                        return callback(response)
+                    }
+                    identity.profile.avatar = file.path
+                    identity.save((error, identity) => {
+                        if (error) {
+                            let response = {
+                                status: "FAILED",
+                                errors: error
+                            }
+                            return callback(response)
+                        } else {
+                            let response = {
+                                status: "SUCCESS",
+                                messages: "Successfully updated the profile picture.",
+                                updated: identity.profile.avatar
+                            }
+                            return callback(response)
+                        }
+                    })
+                })
+            } catch (error) {
+                let response = {
+                    status: "FAILED",
+                    errors: error
+                }
+                return callback(response)
+            }
+        },
         addEducationRecord: (formData, user, callback) => {
             try {
 
@@ -290,30 +326,40 @@ module.exports = (() => {
                 return callback(response)
             }
         },
-        updateUser: (formData, userapplication, callback) => {
-
+        updateUser: (formData, user, callback) => {
             try {
-                Object.assign(userapplication.applicationData, {'profile': formData})
-                userapplication.markModified('applicationData')
-                userapplication.save((error, saved) => {
+                Identity.findByShieldUser(user, (error, identity) => {
                     if (error) {
                         let response = {
                             status: "FAILED",
-                            error: error
+                            errors: error
                         }
                         return callback(response)
                     } else {
-                        let response = {
-                            status: "SUCCESS",
-                            message: "Successfully updated the user data",
-                            userData: saved
-                        }
-                        return callback(response)
+                        identity.profile = formData
+                        // Object.assign(userapplication.applicationData, {'profile': formData})
+                        // userapplication.markModified('applicationData')
+                        identity.save((error, saved) => {
+                            if (error) {
+                                let response = {
+                                    status: "FAILED",
+                                    errors: error
+                                }
+                                return callback(response)
+                            } else {
+                                let response = {
+                                    status: "SUCCESS",
+                                    message: "Profile successfully updated.",
+                                    updated: saved
+                                }
+                                return callback(response)
+                            }
+                        })
                     }
                 })
             } catch (error) {
                 let response = {
-                    status: 'FAILED',
+                    status: "FAILED",
                     errors: error
                 }
                 return callback(response)

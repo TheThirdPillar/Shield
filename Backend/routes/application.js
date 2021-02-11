@@ -1,7 +1,7 @@
 var express = require('express')
 var router = express.Router()
 var passport = require('passport')
-const { body, param, query } = require('express-validator')
+const { body, param } = require('express-validator')
 
 /* Data models */
 var Application = require('../models/application')
@@ -18,6 +18,18 @@ var isAuthenticated = (req, res, next) => {
         return next()
     })(req, res, next)
 }
+
+// Multer Setup
+var multer = require('multer')
+var storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './uploads')
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.fieldname)
+  }
+})
+var upload = multer({ storage: storage, limits: { fileSize: 10 * 1024 * 1024, fieldSize: 50 * 1024 * 1024 } })
 
 // We only want to allow a certain users
 // such as admin of communities to be able to
@@ -44,6 +56,8 @@ router.post('/', [
         .notEmpty()
 ], isAuthenticated, applicationController.registerApplication)
 
+// Profile picture upload
+router.post('/listen/profile/upload', isAuthenticated, upload.single('picture'), applicationController.profileUpload)
 
 router.get('/listen/:appId/:functionName', [
     param('appId')
