@@ -1,4 +1,4 @@
-const domain = "http://localhost:3000"
+const domain = 'https://api.skillschain.org'
 
 // TODO: Promise rejects should return of type Error
 

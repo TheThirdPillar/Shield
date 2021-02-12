@@ -1,4 +1,4 @@
-const domain = 'http://localhost:3000'
+const domain = 'https://api.skillschain.org'
 
 function download(filename, text) {
     var element = document.createElement('a')
