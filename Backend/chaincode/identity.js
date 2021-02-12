@@ -93,7 +93,8 @@ module.exports = (() => {
                         return callback(response)
                     }
                     identity.profile.avatar = file.path
-                    identity.save((error, identity) => {
+                    identity.markModified('profile')
+                    identity.save((error, saved) => {
                         if (error) {
                             let response = {
                                 status: "FAILED",
@@ -104,7 +105,7 @@ module.exports = (() => {
                             let response = {
                                 status: "SUCCESS",
                                 messages: "Successfully updated the profile picture.",
-                                updated: identity.profile.avatar
+                                updated: saved.profile.avatar
                             }
                             return callback(response)
                         }
