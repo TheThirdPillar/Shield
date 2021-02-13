@@ -8,7 +8,7 @@ sgMail.setApiKey(sendgrid_API_KEY.APIKey)
 
 exports.sendMail = function(sendTo, verificationCode) {
 
-    let url = "http://localhost:3000/users/verify?code=" + verificationCode
+    let url = "https://api.skillschain.org/users/verify?code=" + verificationCode
 
     const message = {
         to: sendTo,
