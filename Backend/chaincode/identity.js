@@ -93,6 +93,7 @@ module.exports = (() => {
                         return callback(response)
                     }
                     identity.profile.avatar = file.path
+                    identity.markModified('profile')
                     identity.save((error, identity) => {
                         if (error) {
                             let response = {
