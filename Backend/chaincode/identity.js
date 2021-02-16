@@ -8,6 +8,8 @@ const Document = require('../models/document')
 const Request = require('../models/request')
 const User = require('../models/user')
 const Identity = require('../models/identity')
+const Community = require('../models/community')
+const UserCommunity = require('../models/usercommunity')
 const request = require('../models/request')
 const identity = require('../models/identity')
 
@@ -94,7 +96,7 @@ module.exports = (() => {
                     }
                     identity.profile.avatar = file.path
                     identity.markModified('profile')
-                    identity.save((error, identity) => {
+                    identity.save((error, saved) => {
                         if (error) {
                             let response = {
                                 status: "FAILED",
@@ -105,7 +107,7 @@ module.exports = (() => {
                             let response = {
                                 status: "SUCCESS",
                                 messages: "Successfully updated the profile picture.",
-                                updated: identity.profile.avatar
+                                updated: saved.profile.avatar
                             }
                             return callback(response)
                         }
@@ -282,6 +284,7 @@ module.exports = (() => {
                 .populate({path: 'educationRecords', populate: {path: 'documents', populate: {path: 'signed'}}})
                 .populate({path: 'professionalRecords', populate: {path: 'documents', populate: {path: 'signed'}}})
                 .populate({path: 'skillRecords'})
+                .populate({path: 'communities', ref: 'UserCommunity', populate: {path: 'community', ref: 'Community'}})
                 .exec((error, identityData) => {
                     if (error) {
                         let response = {
@@ -858,6 +861,67 @@ module.exports = (() => {
                                     identity: saved
                                 }
                                 return callback(response)
+                            }
+                        })
+                    }
+                })
+            } catch (error) {
+                let response = {
+                    status: "FAILED",
+                    errors: error
+                }
+                return callback(response)
+            }
+        },
+        addUserCommunities: (formData, user, callback) => {
+            try {
+                Identity.findByShieldUser(user, (error, identity) => {
+                    if (error) {
+                        let response = {
+                            status: "FAILED",
+                            errors: error
+                        }
+                        return callback(response)
+                    } else {
+                        Community.findById(formData.communityId, (error, community) => {
+                            if (error) {
+                                let response = {
+                                    status: "FAILED",
+                                    errors: error
+                                }
+                                return callback(response)
+                            } else {
+                                let usercommunity = new UserCommunity({
+                                    community: community._id,
+                                    powURL: formData.powURL
+                                })
+                                usercommunity.save((error, saved) => {
+                                    if (error) {
+                                        let response = {
+                                            status: 'FAILED',
+                                            errors: error
+                                        }
+                                        return callback(response)
+                                    } else {
+                                        identity.communities.push(saved)
+                                        identity.save((error, updated) => {
+                                            if (error) {
+                                                let response = {
+                                                    status: "FAILED",
+                                                    errors: error
+                                                }
+                                                return callback(response)
+                                            } else {
+                                                let response = {
+                                                    status: "SUCCESS",
+                                                    message: "Successfully updated user community,",
+                                                    communities: updated.communities
+                                                }
+                                                return callback(response)
+                                            }
+                                        })
+                                    }
+                                })
                             }
                         })
                     }
