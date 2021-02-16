@@ -28,6 +28,29 @@ exports.registerCommunity = (req, res) => {
         })
 
     } catch (error) {
-        return res.status(500).json({status: 'FAILED', error: error})
+        return res.status(500).json({status: 'FAILED', errors: error})
+    }
+}
+
+exports.getAllCommunities = (req, res) => {
+
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+        return res.status(400).json({
+            status: 'FAILED',
+            errors: errors.array()
+        })
+    }
+
+    try {
+        Community.find({}, (error, communities) => {
+            if (error) {
+                return res.status(500).json({status: 'FAILED', errors: error, message: 'Unable to find communities at the moment.'})
+            }
+
+            return res.status(200).json({status: "SUCCESS", communities: communities, message: "Successfully found all the communities."})
+        })
+    } catch (error) {
+        return res.status(500).json({status: "FAILED", errors: error})
     }
 }

@@ -284,6 +284,7 @@ module.exports = (() => {
                 .populate({path: 'educationRecords', populate: {path: 'documents', populate: {path: 'signed'}}})
                 .populate({path: 'professionalRecords', populate: {path: 'documents', populate: {path: 'signed'}}})
                 .populate({path: 'skillRecords'})
+                .populate({path: 'communities', ref: 'UserCommunity', populate: {path: 'community', ref: 'Community'}})
                 .exec((error, identityData) => {
                     if (error) {
                         let response = {
@@ -892,9 +893,7 @@ module.exports = (() => {
                             } else {
                                 let usercommunity = new UserCommunity({
                                     community: community._id,
-                                    powURL: formData.powURL,
-                                    joinDate: new Date(formData.joinDate),
-                                    leaveDate: (formData.leaveDate) ? new Date(formData.leaveDate) : null
+                                    powURL: formData.powURL
                                 })
                                 usercommunity.save((error, saved) => {
                                     if (error) {

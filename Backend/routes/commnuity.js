@@ -20,6 +20,8 @@ var isVerifiedSignature = (req, res, next) => {
     })(req, res, next)
 }
 
+router.get('/', communityController.getAllCommunities)
+
 router.post('/', [
     // Check if the body has both name and shortname
     // TODO: Signature exists in body
