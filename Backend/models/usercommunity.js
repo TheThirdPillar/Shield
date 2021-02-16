@@ -1,5 +1,5 @@
 var mongoose = require('mongoose')
-var Schema = mongoose.Aggregate.Schema
+var Schema = mongoose.Schema
 
 var UserCommunitySchema = new Schema({
     community: {type: Schema.Types.ObjectId, ref: 'Community', required: true},
