@@ -203,6 +203,7 @@ exports.getPublicProfile = (req, res) => {
         .populate({path: 'educationRecords', populate: {path: 'documents', populate: {path: 'signed'}}})
         .populate({path: 'professionalRecords', populate: {path: 'documents', populate: {path: 'signed'}}})
         .populate({path: 'skillRecords'})
+        .populate({path: 'communities', ref: 'UserCommunity', populate: {path: 'community', ref: 'Community'}})
         .exec((error, identity) => {
             if (error) {
                 let response = {
