@@ -6,22 +6,23 @@ var sendgrid_API_KEY = require('../../config/sendgrid')
 // Set API KEY
 sgMail.setApiKey(sendgrid_API_KEY.APIKey)
 
-exports.sendMail = function(sendTo, verificationCode) {
+exports.sendMail = function(sendTo, requestFrom) {
 
-    let url = "https://api.skillschain.org/users/verify?code=" + verificationCode
+    let requestFromEmailAddress = requestFrom.email
+    let requestFromSocialAccount = requestFrom.social
 
     const message = {
         to: sendTo,
         from: 'no-reply@skillschain.org',
-        subject: 'SkillsChain Email Verification',
-        text: 'OTP to verify the validity of the email',
+        subject: 'Offline Private Data Request - #SkillsChain',
+        text: 'A user has requested your private data, details are: ',
         html: `
 
         <!DOCTYPE html>
         <html lang="en">
         <head>
             <meta charset="UTF-8">
-            <title>SkillsChain - Email verification</title>
+            <title>SkillsChain - offline private data request</title>
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <style>
                 html, body {
@@ -132,12 +133,11 @@ exports.sendMail = function(sendTo, verificationCode) {
                 <div class="full_width">
                     <img src="http://cdn.mcauto-images-production.sendgrid.net/ef29f36c092118aa/f0bb3b59-82b7-4f62-b481-409eb256f972/311x44.png" style="width:100%;margin-top:20px;margin-bottom:50px;">
                     <img class="email_check_bg" src="https://i.ibb.co/CQ1tnXW/email-bg.png">
-                    <p class="email_title">Verify your Email</p>
+                    <p class="email_title">Requested By: </p>
                     <div class="horizontal_line"></div>
-                    <p class="email_info">Greetings from the team. Looks like you're just a couple of steps away. Please click on the link below to verify your account. </p>
-                    <div class="email_box">
-                        <a href=${url}>Verify with Shield</a>
-                    </div>
+                    <p class="email_info">Email Address: ${requestFromEmailAddress} </p>
+                    <p class="email_info">Social Media: ${requestFromSocialAccount} </p>
+                    <p class="email_info">This is auto-generated mail. Please do not response to this. If you are comfortable sharing your data offline, please forward the documents to the above email address. </p>
                 </div>
             </div>
         </body>
