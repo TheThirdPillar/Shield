@@ -10,8 +10,14 @@ const User = require('../models/user')
 const Identity = require('../models/identity')
 const Community = require('../models/community')
 const UserCommunity = require('../models/usercommunity')
+const EmailRequest = require('../models/emailRequests')
+
 const request = require('../models/request')
 const identity = require('../models/identity')
+
+/* Custom utilities and others */
+var requestEmail = require('../utils/emailer/request')
+
 
 // TODO: Application Search will be repeated here,
 // must be updated once route validators are improved.
@@ -922,6 +928,94 @@ module.exports = (() => {
                                         })
                                     }
                                 })
+                            }
+                        })
+                    }
+                })
+            } catch (error) {
+                let response = {
+                    status: "FAILED",
+                    errors: error
+                }
+                return callback(response)
+            }
+        },
+        handleSoftskills: (formData, user, callback) => {
+            try {
+                Identity.findByShieldUser(user, (error, identity) => {
+                    if (error) {
+                        let response = {
+                            status: "FAILED",
+                            errors: error
+                        }
+                        return callback(response)
+                    } else {
+                        identity.softskills = formData.softskills
+                        identity.save((error, saved) => {
+                            if (error) {
+                                let response = {
+                                    status: "FAILED",
+                                    errors: error
+                                }
+                                return callback(response)
+                            } else {
+                                let response = {
+                                    status: "SUCCESS",
+                                    message: "Successfully updated softskills.",
+                                    identity: saved
+                                }
+                                return callback(response)
+                            }
+                        })
+                    }
+                })
+            } catch (error) {
+                let response = {
+                    status: "FAILED",
+                    errors: error
+                }
+                return callback(response)
+            }
+        },
+        requestPrivateDataByEmail: (formData, callback) => {
+            try {
+                
+                Identity.findByUsername(formData.username, (error, user) => {
+                    if (error) {
+                        let response = {
+                            status: 'FAILED',
+                            errors: error
+                        }
+                        return callback(response)
+                    } else {
+                        let emailRequest = new EmailRequest({
+                            requestedByEmail: formData.email,
+                            requestedBySocialProfileURL: formData.profileURL,
+                            identityProfileRequested: user
+                        })
+                        emailRequest.save((error, erequest) => {
+                            if (error) {
+                                console.log(error)
+                                let response = {
+                                    status: 'FAILED',
+                                    errors: error
+                                }
+                                return callback(response)
+                            } else {
+
+                                // Send a mail to the user
+                                let requestFrom = {}
+                                requestFrom.email = erequest.requestedByEmail
+                                requestFrom.social = erequest.requestedBySocialProfileURL
+                                requestEmail.sendMail(user.profile.email.address, requestFrom)
+
+                                // Add eevent response for email
+                                
+                                let response = {
+                                    status: 'SUCCESS',
+                                    message: 'Successfully requested user for private data over email.'
+                                }
+                                return callback(response)
                             }
                         })
                     }

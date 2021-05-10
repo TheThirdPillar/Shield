@@ -311,6 +311,22 @@ exports.applicationPutter = (req, res) => {
                         return res.status(400).json(response)
                     }
                 })
+            } else if (req.params['functionName'] === 'handleSoftskills') {
+                identity.handleSoftskills(formData, user, (response) => {
+                    if (response.status === 'SUCCESS') {
+                        return res.status(200).json(response)
+                    } else {
+                        return res.status(400).json(response)
+                    }
+                })
+            } else if (req.params['functionName'] === 'requestPrivateDataByEmail') {
+                identity.requestPrivateDataByEmail(formData, (response) => {
+                    if (response.status === 'SUCCESS') {
+                        return res.status(200).json(response)
+                    } else {
+                        return res.status(400).json(response)
+                    }
+                })
             } else {
                 return res.status(400).json({status: 'FAILED', message: 'Invalid function name'})
             }

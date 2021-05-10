@@ -9,6 +9,7 @@ var IdentitySchema = new Schema({
     professionalRecords: [{type: Schema.Types.ObjectId, ref: 'Record'}],
     skillRecords: [{type: Schema.Types.ObjectId, ref: 'UserSkillData'}],
     virtues: [{type: String}],
+    softskills: [{type: String}],
     communities: [{type: Schema.Types.ObjectId, ref: 'UserCommunity'}],
     balance: {type: Number, minimum: [0, 'Balance cannot be negative.'], default: 0}
 })
