@@ -55,6 +55,21 @@ router.get('/verify', [
     })
 ], userController.verifyUser)
 
+// Request user for private data over email
+// This is a temporary block of code. To be removed
+// as soon as possible. 
+// TODO: Remove later..
+// TODO: Move user exists check code here from controller.
+router.put('/requestPrivateDataByEmail', [
+  body('username')
+    .notEmpty(),
+  body('email')
+    .notEmpty()
+    .isEmail(),
+  body('profileURL')
+    .notEmpty()
+], userController.requestPrivateDataByEmail)
+
 // Register a user with an application
 // TODO: Signatures are required
 router.post('/:id/login', [
