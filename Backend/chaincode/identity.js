@@ -15,10 +15,6 @@ const EmailRequest = require('../models/emailRequests')
 const request = require('../models/request')
 const identity = require('../models/identity')
 
-/* Custom utilities and others */
-var requestEmail = require('../utils/emailer/request')
-
-
 // TODO: Application Search will be repeated here,
 // must be updated once route validators are improved.
 
@@ -977,56 +973,5 @@ module.exports = (() => {
                 return callback(response)
             }
         },
-        requestPrivateDataByEmail: (formData, callback) => {
-            try {
-                
-                Identity.findByUsername(formData.username, (error, user) => {
-                    if (error) {
-                        let response = {
-                            status: 'FAILED',
-                            errors: error
-                        }
-                        return callback(response)
-                    } else {
-                        let emailRequest = new EmailRequest({
-                            requestedByEmail: formData.email,
-                            requestedBySocialProfileURL: formData.profileURL,
-                            identityProfileRequested: user
-                        })
-                        emailRequest.save((error, erequest) => {
-                            if (error) {
-                                console.log(error)
-                                let response = {
-                                    status: 'FAILED',
-                                    errors: error
-                                }
-                                return callback(response)
-                            } else {
-
-                                // Send a mail to the user
-                                let requestFrom = {}
-                                requestFrom.email = erequest.requestedByEmail
-                                requestFrom.social = erequest.requestedBySocialProfileURL
-                                requestEmail.sendMail(user.profile.email.address, requestFrom)
-
-                                // Add eevent response for email
-                                
-                                let response = {
-                                    status: 'SUCCESS',
-                                    message: 'Successfully requested user for private data over email.'
-                                }
-                                return callback(response)
-                            }
-                        })
-                    }
-                })
-            } catch (error) {
-                let response = {
-                    status: "FAILED",
-                    errors: error
-                }
-                return callback(response)
-            }
-        }
     }
 })() 

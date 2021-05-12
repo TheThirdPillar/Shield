@@ -5,6 +5,7 @@ var jwt = require('jsonwebtoken')
 /* Custom utilities and others*/
 var registrationEmail = require('../utils/emailer/registration')
 var tokenSecret = require('../config/jwt')
+var requestEmail = require('../utils/emailer/request')
 
 /* Data models */
 const User = require('../models/user')
@@ -12,6 +13,8 @@ const VerificationCode = require('../models/verificationcode')
 const Application = require('../models/application')
 const UserApplication = require('../models/userapplication')
 const Identity = require('../models/identity');
+const EmailRequest = require('../models/emailRequests')
+
 const identity = require('../models/identity');
 
 // Function to register user
@@ -225,5 +228,64 @@ exports.getPublicProfile = (req, res) => {
             errors: error
         }
         return res.status(400).json(response)
+    }
+}
+
+exports.requestPrivateDataByEmail = (req, res) => {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+        console.log(errors)
+        return res.status(400).json({ status: 'FAILED', errors: errors.array() })
+    }
+    try {
+        console.log("T1")
+        Identity.findByUsername(req.body.username, (error, user) => {
+            if (error) {
+                let response = {
+                    status: 'FAILED',
+                    errors: error
+                }
+                console.log("t2")
+                return res.status(500).json(response)
+            } else {
+                let emailRequest = new EmailRequest({
+                    requestedByEmail: req.body.email,
+                    requestedBySocialProfileURL: req.body.profileURL,
+                    identityProfileRequested: user
+                })
+                emailRequest.save((error, erequest) => {
+                    if (error) {
+                        console.log(error)
+                        let response = {
+                            status: 'FAILED',
+                            errors: error
+                        }
+                        return res.status(500).json(response)
+                    } else {
+                        console.log("t3")
+                        // Send a mail to the user
+                        let requestFrom = {}
+                        requestFrom.email = erequest.requestedByEmail
+                        requestFrom.social = erequest.requestedBySocialProfileURL
+                        requestEmail.sendMail(user.profile.email.address, requestFrom)
+
+                        // Add eevent response for email
+                        
+                        let response = {
+                            status: 'SUCCESS',
+                            message: 'Successfully requested user for private data over email.'
+                        }
+                        console.log("t4")
+                        return res.status(200).json(response)
+                    }
+                })
+            }
+        })
+    } catch (error) {
+        let response = {
+            status: "FAILED",
+            errors: error
+        }
+        return res.status(500).json(response)
     }
 }
