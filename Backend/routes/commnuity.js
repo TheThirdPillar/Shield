@@ -1,7 +1,7 @@
 var express = require('express')
 var router = express.Router()
 var passport = require('passport')
-const { body } = require('express-validator')
+const { body, param } = require('express-validator')
 
 /* Data models */
 var User = require('../models/user')
@@ -21,6 +21,12 @@ var isVerifiedSignature = (req, res, next) => {
 }
 
 router.get('/', communityController.getAllCommunities)
+
+router.get('/:communityShortName', [
+    param('communityShortName')
+        .notEmpty()
+        .trim()
+], communityController.getCommunity)
 
 router.post('/', [
     // Check if the body has both name and shortname
