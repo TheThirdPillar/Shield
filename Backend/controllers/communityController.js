@@ -54,3 +54,28 @@ exports.getAllCommunities = (req, res) => {
         return res.status(500).json({status: "FAILED", errors: error})
     }
 }
+
+exports.getCommunity = (req, res) => {
+
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+        return res.status(400).json({
+            status: 'FAILED',
+            errors: errors.array()
+        })
+    }
+
+    console.log(req.params)
+    
+    try {
+        Community.findCommunityByShortName(req.params['communityShortName'], (error, community) => {
+            if (error) {
+                return res.status(500).json({status: 'FAILED', errors: error, message: "Unable to find the community at the moment."})
+            }
+
+            return res.status(200).json({status: "SUCCESS", community: community, messsage: "Successfully found the community."})
+        })
+    } catch (error) {   
+        return res.status(500).json({status: 'FAILED', errors: error})
+    }
+}

@@ -10,7 +10,10 @@ var CommunitySchema = new Schema({
     description: { type: String },
     communitySkills: [ {type: Schema.Types.ObjectId, ref: 'Skill' }],
     displayPicture: {type: String, default: null},
-    website: {type: String, default: null}
+    website: {type: String, default: null},
+    networkRegistered: {type: Boolean, default: true},
+    metaphysicalRegistration: {type: Boolean, default: false},
+    metaphysicalInformation: {type: Schema.Types.ObjectId, ref: 'CompanyRegistration'}
 })
 
 CommunitySchema.statics.findCommunityByShortName = function findCommunityByShortName(shortName, callback) {
