@@ -397,7 +397,6 @@ module.exports = (() => {
                                     encryptedFile: formData.encryptedFile,
                                     owner: identity._id,
                                     encryptedKey: formData.encryptedKey,
-                                    dateCreated: new Date(),
                                     record: record._id
                                 })
                                 document.save((error, document) => {

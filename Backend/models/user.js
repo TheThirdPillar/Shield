@@ -12,7 +12,8 @@ var UserSchema = new Schema({
             partialFilterExpression: { publicKey: { $type: 'string' } }
         }
     },
-    active: { type: Boolean, default: false }
+    active: { type: Boolean, default: false },
+    dateCreated: { type: Date, default: Date.now() }
 })
 
 UserSchema.statics.findUserByEmail = function findUserByEmail(email, callback) {
