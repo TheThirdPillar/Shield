@@ -283,10 +283,11 @@ module.exports = (() => {
         getUserData: (user, callback) => {
             try {
                 Identity.findOne({shieldUser: user._id})
-                .populate({path: 'educationRecords', populate: {path: 'documents', populate: {path: 'signed'}}})
-                .populate({path: 'professionalRecords', populate: {path: 'documents', populate: {path: 'signed'}}})
+                .populate({path: 'educationRecords', populate: {path: 'documents', populate: [{path: 'signed'}, {path: 'signedBy', populate: {path: 'admin'}}]}})
+                .populate({path: 'professionalRecords', populate: {path: 'documents', populate: [{path: 'signed'}, {path: 'signedBy', populate: {path: 'admin'}}]}})
                 .populate({path: 'skillRecords'})
                 .populate({path: 'communities', ref: 'UserCommunity', populate: {path: 'community', ref: 'Community'}})
+                .populate({path: 'admin', ref: 'Community'})
                 .exec((error, identityData) => {
                     if (error) {
                         let response = {
@@ -764,7 +765,9 @@ module.exports = (() => {
                         }
                         return callback(response)
                     } else {
-                        Document.find({owner: identity}, (error, documents) => {
+                        Document.find({owner: identity})
+                        .populate({path: 'signedBy', populate: {path: 'admin'}})
+                        .exec((error, documents) => {
                             if (error) {
                                 let response = {
                                     status: 'FAILED',

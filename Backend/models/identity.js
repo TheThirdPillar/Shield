@@ -11,7 +11,8 @@ var IdentitySchema = new Schema({
     virtues: [{type: String}],
     softskills: [{type: String}],
     communities: [{type: Schema.Types.ObjectId, ref: 'UserCommunity'}],
-    balance: {type: Number, minimum: [0, 'Balance cannot be negative.'], default: 0}
+    balance: {type: Number, minimum: [0, 'Balance cannot be negative.'], default: 0},
+    admin: {type: Schema.Types.ObjectId, ref: 'Community'}
 })
 
 IdentitySchema.statics.findByUsername = function findByUsername (username, callback) {
