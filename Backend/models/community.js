@@ -4,8 +4,9 @@ var Schema = mongoose.Schema
 var CommunitySchema = new Schema({
     name: { type: String, required: true },
     shortName: { type: String, required: true, unique: true },
-    partners: [ { type: Schema.Types.ObjectId, ref: 'User'} ],
-    members: [ { type: Schema.Types.ObjectId, ref: 'User'} ],
+    communityType: { type: String, required: true, enum: ['skill', 'validator', 'productivity']},
+    partners: [ { type: Schema.Types.ObjectId, ref: 'Identity'} ],
+    members: [ { type: Schema.Types.ObjectId, ref: 'Identity'} ],
     admin: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     description: { type: String },
     communitySkills: [ {type: Schema.Types.ObjectId, ref: 'Skill' }],

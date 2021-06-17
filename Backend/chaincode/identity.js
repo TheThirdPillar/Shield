@@ -286,6 +286,8 @@ module.exports = (() => {
                 .populate({path: 'educationRecords', populate: {path: 'documents', populate: [{path: 'signed'}, {path: 'signedBy', populate: {path: 'admin'}}]}})
                 .populate({path: 'professionalRecords', populate: {path: 'documents', populate: [{path: 'signed'}, {path: 'signedBy', populate: {path: 'admin'}}]}})
                 .populate({path: 'skillRecords'})
+                .populate({path: 'wellBeingScore', populate: {path: 'WellBeingStack'}})
+                .populate({path: 'wellBeingValidator', ref: 'Community'})
                 .populate({path: 'communities', ref: 'UserCommunity', populate: {path: 'community', ref: 'Community'}})
                 .populate({path: 'admin', ref: 'Community'})
                 .exec((error, identityData) => {
