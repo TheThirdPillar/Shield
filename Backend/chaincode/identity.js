@@ -11,9 +11,11 @@ const Identity = require('../models/identity')
 const Community = require('../models/community')
 const UserCommunity = require('../models/usercommunity')
 const EmailRequest = require('../models/emailRequests')
+const WellBeingStack = require('../models/wellBeingStack')
 
 const request = require('../models/request')
 const identity = require('../models/identity')
+const { response } = require('express')
 
 // TODO: Application Search will be repeated here,
 // must be updated once route validators are improved.
@@ -286,6 +288,8 @@ module.exports = (() => {
                 .populate({path: 'educationRecords', populate: {path: 'documents', populate: [{path: 'signed'}, {path: 'signedBy', populate: {path: 'admin'}}]}})
                 .populate({path: 'professionalRecords', populate: {path: 'documents', populate: [{path: 'signed'}, {path: 'signedBy', populate: {path: 'admin'}}]}})
                 .populate({path: 'skillRecords'})
+                .populate({path: 'wellBeingStacks', populate: {path: 'WellBeingStack'}})
+                .populate({path: 'wellBeingValidator', ref: 'Community'})
                 .populate({path: 'communities', ref: 'UserCommunity', populate: {path: 'community', ref: 'Community'}})
                 .populate({path: 'admin', ref: 'Community'})
                 .exec((error, identityData) => {
@@ -976,5 +980,115 @@ module.exports = (() => {
                 return callback(response)
             }
         },
+        handleProductivityStack: (formData, user, callback) => {
+            console.log("REached");
+
+            try {
+                Identity.findByShieldUser(user)
+                .populate({path: 'wellBeingStacks'})
+                .exec((error, identity) => {
+                    if (error) {
+                        let response = {
+                            status: "FAILED",
+                            errors: error
+                        }
+                        return callback(response)
+                    } else {
+                        
+                        // TODO: Replace object with MAP
+                        
+                        // Check if this particular stack exists
+                        // If it exists, update stack ratings, set signature to NULL
+                        // Create StackSignatureRequest
+                        // If it does not exist, create stack ratings,
+                        // Create StackSignature Request
+                        
+                        let stackExists = identity.wellBeingStacks.some(stack => stack.stackName === formData.stackName)
+
+                        console.log(stackExists)
+
+                        if (stackExists) {
+                            
+                            // Find the index
+                            let stackIndex = identity.wellBeingStacks.findIndex(stack => stack.stackName === formData.stackName)
+                            let stackToBeUpdated = identity.wellBeingStacks[stackIndex]
+
+                            // Find and update the stack
+                            WellBeingStack.findById(stackToBeUpdated._id)
+                            .exec((error, stack) => {
+                                if (error) {
+                                    let response = {
+                                        status: "FAILED",
+                                        message: "Stack exists, but unable to find and udpate."
+                                    }
+                                    return callback(response)
+                                } else {
+                                    stack.stackRatings = formData.stackRatings
+                                    stack.markModified('stackRatings')
+                                    stack.save((error, savedStack) => {
+                                        if (error) {
+                                            let response = {
+                                                status: "FAILED",
+                                                message: "Failed to save updated stack."
+                                            }
+                                            return callback(response)
+                                        } else {
+                                            let response = {
+                                                status: "SUCCESS",
+                                                message: "Successfully updated the stack",
+                                                updatedStack: savedStack             
+                                            }
+                                            return callback(response)
+                                        }
+                                    })
+                                }
+                            })
+
+                        } else {
+                            let wellBeingStack = new WellBeingStack({
+                                stackName: formData.stackName,
+                                stackRatings: formData.stackRatings,
+                                lastUpdated: Date.now()
+                            })
+    
+                            wellBeingStack.save((error, wbs) => {
+                                if (error) {
+                                    let response = {
+                                        status: "FAILED",
+                                        message: "Unable to update the stack rating"
+                                    }
+                                    return callback(response)
+                                } else {
+    
+                                    identity.wellBeingStacks.push(wbs)
+                                    identity.save((error, updatedIdentity) => {
+                                        if (error) {
+                                           let response = {
+                                               status: "FAILED",
+                                               message: "Stack updated, failed to update identity"
+                                           }
+                                           return callback(response)
+                                        } else {
+                                            let response = {
+                                                status: "SUCCESS",
+                                                message: "Successfully updated the stack",
+                                                updatedStack: updatedIdentity.wellBeingStack
+                                            }
+                                            return callback(response)
+                                        }
+                                    })
+                                }
+                            })
+                        }
+                    }
+                })
+            } catch (error) {
+                let response = {
+                    status: "FAILED",
+                    errors: error
+                }
+                return callback(response)
+            }
+        } 
     }
 })() 
