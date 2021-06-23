@@ -289,7 +289,7 @@ module.exports = (() => {
                 .populate({path: 'professionalRecords', populate: {path: 'documents', populate: [{path: 'signed'}, {path: 'signedBy', populate: {path: 'admin'}}]}})
                 .populate({path: 'skillRecords'})
                 .populate({path: 'wellBeingStacks', populate: {path: 'WellBeingStack'}})
-                .populate({path: 'wellBeingValidator', ref: 'Community'})
+                .populate({path: 'wellBeingValidation', ref: 'WellBeingValidation', populate: [{path: 'wellBeingValidator', ref: 'Identity'}, {path: 'wellBeingValidatorCommunity', ref: 'Community'}]})
                 .populate({path: 'communities', ref: 'UserCommunity', populate: {path: 'community', ref: 'Community'}})
                 .populate({path: 'admin', ref: 'Community'})
                 .exec((error, identityData) => {
@@ -1022,6 +1022,7 @@ module.exports = (() => {
                                     }
                                     return callback(response)
                                 } else {
+                                    stack.lastUpdated = Date.now()
                                     stack.stackRatings = formData.stackRatings
                                     stack.markModified('stackRatings')
                                     stack.save((error, savedStack) => {
@@ -1032,6 +1033,10 @@ module.exports = (() => {
                                             }
                                             return callback(response)
                                         } else {
+                                            // Re-evaluate well being score
+
+                                            console.log(identity.wellBeingStacks)
+
                                             let response = {
                                                 status: "SUCCESS",
                                                 message: "Successfully updated the stack",
@@ -1068,6 +1073,10 @@ module.exports = (() => {
                                            }
                                            return callback(response)
                                         } else {
+                                            // Re-evaluate well being score
+
+                                            console.log(identity.wellBeingStacks)
+
                                             let response = {
                                                 status: "SUCCESS",
                                                 message: "Successfully updated the stack",
