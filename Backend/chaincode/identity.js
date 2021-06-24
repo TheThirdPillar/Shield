@@ -286,7 +286,7 @@ module.exports = (() => {
         getUserData: (user, callback) => {
             try {
                 Identity.findOne({shieldUser: user._id})
-                .populate({path: 'identityDocuments', populate: [{path: 'signed', ref: 'Request'}, {path: 'signedBy', ref: 'Identity'}]})
+                .populate({path: 'identityDocuments', populate: [{path: 'signed', ref: 'Request'}, {path: 'signedBy', ref: 'Identity', populate: {path: 'admin', ref:'Community'}}]})
                 .populate({path: 'educationRecords', populate: {path: 'documents', populate: [{path: 'signed'}, {path: 'signedBy', populate: {path: 'admin'}}]}})
                 .populate({path: 'professionalRecords', populate: {path: 'documents', populate: [{path: 'signed'}, {path: 'signedBy', populate: {path: 'admin'}}]}})
                 .populate({path: 'skillRecords'})
