@@ -7,6 +7,7 @@ const gigs = require('../chaincode/gigs')
 
 /* Data models */
 var Application = require('../models/application')
+const e = require('express')
 
 // TODO: Move this inside the chaincode
 exports.profileUpload = (req, res) => {
@@ -198,6 +199,14 @@ exports.applicationSetter = (req, res) => {
                 })
             } else if (req.params['functionName'] === 'addDocument') {
                 identity.addDocument(formData, user, (response) => {
+                    if (response.status === 'SUCCESS') {
+                        return res.status(200).json(response)
+                    } else {
+                        return res.status(400).json(response)
+                    }
+                })
+            } else if (req.params['functionName'] === 'handleIdentityDocument') {
+                identity.handleIdentityDocument(formData, user, (response) => {
                     if (response.status === 'SUCCESS') {
                         return res.status(200).json(response)
                     } else {
