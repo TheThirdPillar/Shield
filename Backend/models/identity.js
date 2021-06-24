@@ -5,6 +5,7 @@ var IdentitySchema = new Schema({
     shieldUser: { type: Schema.Types.ObjectId, ref: 'User', required: true},
     username: { type: String },
     profile: { type: Object, },
+    identityDocuments: [{type: Schema.Types.ObjectId, ref: 'Document'}],
     educationRecords: [{ type: Schema.Types.ObjectId, ref: 'Record'}],
     professionalRecords: [{type: Schema.Types.ObjectId, ref: 'Record'}],
     skillRecords: [{type: Schema.Types.ObjectId, ref: 'UserSkillData'}],

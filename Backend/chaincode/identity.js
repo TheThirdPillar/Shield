@@ -16,6 +16,7 @@ const WellBeingStack = require('../models/wellBeingStack')
 const request = require('../models/request')
 const identity = require('../models/identity')
 const { response } = require('express')
+const e = require('express')
 
 // TODO: Application Search will be repeated here,
 // must be updated once route validators are improved.
@@ -285,6 +286,7 @@ module.exports = (() => {
         getUserData: (user, callback) => {
             try {
                 Identity.findOne({shieldUser: user._id})
+                .populate({path: 'identityDocuments', populate: [{path: 'signed', ref: 'Request'}, {path: 'signedBy', ref: 'Identity'}]})
                 .populate({path: 'educationRecords', populate: {path: 'documents', populate: [{path: 'signed'}, {path: 'signedBy', populate: {path: 'admin'}}]}})
                 .populate({path: 'professionalRecords', populate: {path: 'documents', populate: [{path: 'signed'}, {path: 'signedBy', populate: {path: 'admin'}}]}})
                 .populate({path: 'skillRecords'})
@@ -431,6 +433,60 @@ module.exports = (() => {
                                                 return callback(response)
                                             }
                                         })
+                                    }
+                                })
+                            }
+                        })
+                    }
+                })
+            } catch (error) {
+                let response = {
+                    status: 'FAILED',
+                    errors: error
+                }
+                return callback(response)
+            }
+        },
+        handleIdentityDocument: (formData, user, callback) => {
+            // TODO: Document types could be added here
+            try {
+                Identity.findByShieldUser(user, (error, identity) => {
+                    if (error) {
+                        let response = {
+                            status: "FAILED",
+                            errors: error
+                        }
+                        return callback(response)
+                    } else {
+                        let document = new Document({
+                            encryptedFile: formData.encryptedFile,
+                            owner: identity._id,
+                            encryptedKey: formData.encryptedKey,
+                        })
+                        document.save((error, document) => {
+                            if (error) {
+                                let response = {
+                                    status: "FAILED",
+                                    error: error
+                                }
+                                return callback(response)
+                            } else {
+                                identity.identityDocuments.push(document)
+                                identity.save((error, updatedIdentity) => {
+                                    if (error) {
+                                        let response = {
+                                            status: "FAILED",
+                                            error: error
+                                        }
+                                        return callback(response)
+                                    } else {
+                                        let response = {
+                                            status: "SUCCESS",
+                                            message: "Successfully added the document.",
+                                            identity: updatedIdentity,
+                                            document: document
+                                        }
+                                        return callback(response)
                                     }
                                 })
                             }
