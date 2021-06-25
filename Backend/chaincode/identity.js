@@ -12,6 +12,7 @@ const Community = require('../models/community')
 const UserCommunity = require('../models/usercommunity')
 const EmailRequest = require('../models/emailRequests')
 const WellBeingStack = require('../models/wellBeingStack')
+const WellBeingValidation = require('../models/wellBeingValidation')
 
 const request = require('../models/request')
 const identity = require('../models/identity')
@@ -1144,6 +1145,83 @@ module.exports = (() => {
                                 }
                             })
                         }
+                    }
+                })
+            } catch (error) {
+                let response = {
+                    status: "FAILED",
+                    errors: error
+                }
+                return callback(response)
+            }
+        },
+        requestStackValidation: (formData, user, callback) => {
+            try {
+                Identity.findByShieldUser(user)
+                .exec((error, identity) => {
+                    if (error) {
+                        let response = {
+                            status: "FAILED",
+                            errors: error
+                        }
+                        return callback(response)
+                    } else {
+                        Community.findById(formData.validatingCommunity)
+                        .exec((error, community) => {
+                            if (error) {
+                                let response = {
+                                    status: "FAILED",
+                                    errors: error
+                                }
+                                return callback(response)
+                            } else {
+                                Identity.findByUsername(formData.validator, (error, validator) => {
+                                    if (error) {
+                                        let response = {
+                                            status: "FAILED",
+                                            errors: error
+                                        }
+                                        return callback(response)
+                                    } else {
+                                        console.log(validator)
+                                        console.log(community)
+                                        console.log(identity)
+                                        let wbValidation = new WellBeingValidation({
+                                            wellBeingStack: formData.stacks,
+                                            requestedBy: identity._id,
+                                            wellBeingValidator: validator._id,
+                                            wellBeingValidatorCommunity: community._id
+                                        })
+                                        wbValidation.save((error, validationRequest) => {
+                                            if (error) {
+                                                let response = {
+                                                    status: "FAILED",
+                                                    errors: error
+                                                }
+                                                return callback(response)
+                                            } else {
+                                                identity.wellBeingValidation = validationRequest
+                                                identity.save((error, updated) => {
+                                                    if (error) {
+                                                        let response = {
+                                                            status: "FAILED",
+                                                            errors: error
+                                                        }
+                                                        return callback(response)
+                                                    } else {
+                                                        let response = {
+                                                            status: "SUCCESS",
+                                                            updatedIdentity: updated
+                                                        }
+                                                        return callback(response)
+                                                    }
+                                                })
+                                            }
+                                        })
+                                    }
+                                })
+                            }
+                        })
                     }
                 })
             } catch (error) {
