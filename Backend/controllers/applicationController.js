@@ -8,6 +8,7 @@ const gigs = require('../chaincode/gigs')
 /* Data models */
 var Application = require('../models/application')
 const e = require('express')
+const { response } = require('express')
 
 // TODO: Move this inside the chaincode
 exports.profileUpload = (req, res) => {
@@ -231,6 +232,14 @@ exports.applicationSetter = (req, res) => {
                 })
             } else if (req.params['functionName'] === 'handleProductivityStack') {
                 identity.handleProductivityStack(formData, user, (response) => {
+                    if (response.status === 'SUCCESS') {
+                        return res.status(200).json(response)
+                    } else {
+                        return res.status(400).json(response)
+                    }
+                })
+            } else if (req.params['functionName'] === 'requestStackValidation') {
+                identity.requestStackValidation(formData, user, (response) => {
                     if (response.status === 'SUCCESS') {
                         return res.status(200).json(response)
                     } else {
