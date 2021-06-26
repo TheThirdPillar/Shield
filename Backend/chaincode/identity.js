@@ -26,7 +26,7 @@ module.exports = (() => {
     return {
         searchApplicationUserByUsername: (searchedUsername, callback) => {
             try {
-                Identity.findByUsername(searchedUsername, (error, user) => {
+                Identity.findByUsername(searchedUsername.toLowerCase(), (error, user) => {
                     if (error) {
                         let response = {
                             status: 'FAILED',
@@ -61,7 +61,7 @@ module.exports = (() => {
                         return callback(response)
                     } else {
                         let {username, ...profile} = formData
-                        user.username = username
+                        user.username = username.toLowerCase()
                         user.profile = profile
                         user.save((error, user) => {
                             if (error) {
