@@ -1,10 +1,10 @@
 {
     "manifest_version": 2,
-    "name": "Shield by ThirdPillar- Dev Version",
+    "name": "Shield by ThirdPillar",
     "short_name": "Shield",
     "description": "Still in a nascent stage, Shield hopes to become the identity layer of the Web 3.0, with privacy as the core foundation.",
     "version": "0.0.0.1",
-    "author": "Gaurav Singh @ ThirdPillar",
+    "author": "Gaurav Singh @ Assembly",
     "icons": {
         "16": "assets/images/favicon-16x16.png",
         "32": "assets/images/favicon-32x32.png",
